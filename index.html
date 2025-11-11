@@ -1,0 +1,38 @@
+<html>
+    <header>
+        <link rel="stylesheet" href="./css/main.css"">
+    </header>
+    <body>
+        <div id="main">
+            <canvas id="phys_sim">
+
+            </canvas>
+            <div id="objects">
+                <ul id="button_list">
+                    <li class="phys_obj">
+                        <button class="spawn_button" id = "fixed_spawn">
+                            Fixed Cube
+                        </button>
+                    </li>
+                    <li class="phys_obj">
+                        <button class="spawn_button" id = "move_spawn">
+                            Moveable Cube
+                        </button>
+                    </li>
+                    <li class="phys_obj">
+                        <button class="spawn_button" id = "muscle">
+                            Muscle
+                        </button>
+                    </li>
+                </ul>
+                
+                
+            </div>
+        </div>
+    </body>
+    
+    <script src="./js/sim_buttons.js"></script>
+    <script src="./js/physics_obj.js"></script>
+    <script src = "./js/fiber.js"></script>
+    <script src = "./js/phys_sim.js"></script>
+</html>
