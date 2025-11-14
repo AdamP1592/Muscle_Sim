@@ -3,15 +3,23 @@ class PhysicsSim{
         this.fixedObjects = []
         this.moveableObjects = []
         this.forceAddingObjects = []
+        this.objects = []
     }
     createFixedSquare(x, y){
-        let width = 5;
-        let height = 5;
-
-        this.fixedObjects.push(new Rect(width, height, x, y));
+        let width = 10;
+        let height = 10;
+        let rect = new Rect(width, height, x, y)
+        this.fixedObjects.push(rect);
+        this.objects.push(rect)
     }  
-    create_moveable_square(x, y){
-
+    createMoveableSquare(x, y){
+        let width = 10;
+        let height = 10;
+        
+        let weight = 25;
+        let rect = new MoveableRect(width, height, x, y, weight)
+        this.fixedObjects.push(rect)
+        this.objects.push(rect)
     }
     create_muscle(x, y){
     
@@ -32,10 +40,10 @@ class Rect{
         //add force to object function
     }
 }
-class moveable_rect extends Rect{
+class MoveableRect extends Rect{
     constructor(width, height, x, y, weight){
-        this.weight = weight;
         super(width, height, x, y);
+        this.weight = weight;
         this.phyiscs = new physicsObject(x, y, weight);
         this.moveable = true;
     }
