@@ -34,7 +34,7 @@ function onclick_event(event){
     
     //gets coords of rect
 
-    console.log(`Event ${event}.\nRect: ${rect}`)
+    //console.log(`Event ${event}.\nRect: ${rect}`)
 
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
@@ -42,20 +42,18 @@ function onclick_event(event){
     //scaled to between 0 to 250 
     let xScaled = 250 * (x / rect.width);
     let yScaled = 250 * (y / rect.height);
-    console.log(`RawXY: ${x}, ${y} \nScaledXY(0 - 250) ${xScaled}, ${yScaled}`)
+    //console.log(`RawXY: ${x}, ${y} \nScaledXY(0 - 250) ${xScaled}, ${yScaled}`)
 
     //in bounds
     if(!( x < 0 || y < 0 || x > rect.width || y > rect.height)){
 
       switch(buttonID){
         case "fixed_spawn":
-          console.log("Button ID: ", buttonID);
+          //console.log("Button ID: ", buttonID);
           sim.createFixedSquare(xScaled, yScaled)
           break;
         case "move_spawn":
           sim.createMoveableSquare(xScaled, yScaled)
-          break;
-        case "fiber_spawn":
           break;
       }
     }
@@ -131,6 +129,7 @@ function drawSquares(){
 
 function draw(currentTime){
   const fps = 30
+  const dt = 0.001
   let elapsedTime = currentTime - lastFrameTime;
   //1000 ms per second
 
@@ -148,10 +147,8 @@ function draw(currentTime){
 
     drawSquares();
 
-    //draw all the stuff from the sim
-
-    
-
+    // update sim 
+    sim.step(dt);
 
     lastFrameTime = currentTime - (elapsedTime % (1000/fps));
     
@@ -185,6 +182,9 @@ window.addEventListener("load", function() {
 function keyPressed(event){
   if(event.key === "Control"){
     controlPressed = true;
+  }
+  if(event.key === "Space"){
+    sleep(1000);
   }
 }
 function keyReleased(event){
@@ -246,10 +246,16 @@ function leftClickCanvas(event) {
       objects.push([key, obj])
     }
     sim.createMuscle(objects[0][1], objects[1][1], objects[0][0], objects[1][0])
-    console.log(sim.forceAddingElements);
+    //console.log(sim.forceAddingElements);
   }
 
 
+}
+function sleep(miliseconds) {
+   var currentTime = new Date().getTime();
+
+   while (currentTime + miliseconds >= new Date().getTime()) {
+   }
 }
 
 window.addEventListener("resize", resizeCanvas)

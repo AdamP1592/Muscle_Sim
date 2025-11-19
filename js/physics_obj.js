@@ -1,36 +1,63 @@
 class physicsObject{
-    constructor(x, y, weight){
+    constructor(x, y, mass){
         this.x = x;
         this.y = y;
-        this.weight = weight;
+        this.mass = mass;
 
-        //total current speed
-        this.speed_x = 0;
-        this.speed_y = 0;
+        //total current velocity
+        this.velocityX = 0;
+        this.velocityY = 0;
 
         //sum of all forces acting over some time
         this.force_x = 0;
         this.force_y = 0;
     }
-    move(delta_t){
+    //for runge-kutta
+    dState_dt(state, forceX, forceY){
+        let vx = state[0];
+        let vy = state[1];
+        let ax = forceX / this.mass;
+        let ay = forceY / this.mass;
+        
+        //returns the dxdt and dvdt
+        return [vx, vy, ax, ay];
+    }
+    predictStep(t, forceX = this.force_x, forceY = this.force_y){
         // f = ma a = f/m
-        let acceleration_x =  this.force_x / this.mass;
-        let acceleration_y = this.force_y / this.mass;
+        // 
+        let accelerationX =  forceX / this.mass;
+        let accelerationY = forceY / this.mass;
 
-        //since it's simplified with an assumed low t value w/ eulers method
-        let delta_x = acceleration_x * (delta_t^2);
-        let delta_y = acceleration_y * (delta_t^2);
+        // a = m/s^2, v = m/s
+        let newVelocityX = (accelerationX * t) + this.velocityX;
+        let newVelocityY = (accelerationY * t) + this.velocityY;
 
-        x += delta_x;
-        y += delta_y;
+        let x = (newVelocityX * t) + this.x;
+        let y = (newVelocityY * t) + this.y;
 
-        this.force_x = 0;
-        this.force_y = 0;
-        return true;
+        let output = {
+            newVelX: newVelocityX,
+            newVelY: newVelocityY,
+            newX: x,
+            newY: y
+        }
+
+        return output;
     }
     addForce(force_x, force_y){  
         this.force_x += force_x;
         this.force_y += force_y;
+
+        return true;
+    }
+    move(t){
+        let newState = this.predictStep(t);
+
+        this.velocityX = newState["newVelX"];
+        this.velocityY = newState["newVelY"];
+
+        this.x = newState["newX"];
+        this.y = newState["newY"];
 
         return true;
     }
