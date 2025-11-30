@@ -1,3 +1,4 @@
+
 const fiber_const_map = {
     a: 65.06,
     b: 1.019,
@@ -104,106 +105,172 @@ class fiber{
 }
 class SkeletalFiber{
     constructor(initialLength, params){
+
         this.x = initialLength;
         this.x_r = initialLength;
-
-        this.crossSectionArea = params.crossSectionArea;
 
         this.x_ref = params.x_ref
         this.kappa = params.kappa;
 
         this.sigma_t = params.sigma_t
 
+        this.delta_x = params.delta_x;
+        this.delta_a = params.delta_a;
+
         
         this.xrMin = 0.6 * initialLength;
         this.xrMax = initialLength;
 
-        this.activation = this.aBar;
-        /* isomeric
-        switch(activationFrequency){
-            case 50:
-                this.mBar = 0.95;
-                this.aBar = -24.1
-                break;
-            case 150:
-                this.mBar = 0.33
-                this.aBar = -19;
-                break;
-            default:
-                this.mBar = 1;
-                this.aBar = -15
-                break;
-        }
-        */
+        this.aBar = params.aBar;
+        this.mBar = params.mBar;
 
-        console.log(`initialized:\n x: ${this.x}\n xr: ${this.x_r}\n kappa: ${this.kappa}\n mBar: ${this.mBar}\n aBar: ${this.aBar}\n xrMin: ${this.xrMin}\n xrMax: ${this.xrMax}`)
+        //helper variables
+        this.activation = this.aBar;
+
+        this.activationObj = new Activation(0, 0);
+        this.activationFunction = (t) => this.activationObj.activateNone(t)
+
     }
-    
+    /**
+    * @param {string} stimulationType
+    */
+    setStimulation(t, stimulationType, freq = 50){
+        //gets the requested stim type
+        stimulationType = stimulationType.toLowerCase()
+        
+        //sets new parameters
+        this.activation.startNew(t, freq);
+
+        //sets the new stimulation function
+        let stimulationTypes = {
+            "none":(t) => this.activationObj.activateNone(t),
+            "square":(t) => this.activationObj.activateSquare(t),
+            "sin":(t) => this.activationObj.activateSin(t),
+            "constant":(t) => this.activationObj.activateConstant(t)
+        }
+
+        this.activationFunction = stimulationTypes[stimulationType];
+    }
+    /**
+     * Custom fit exponential equation for adaptive mbar: mbar = 8.01869 * (0.633738 ^ x) + 0.599493
+     * This was created by me from the limited data given in the paper and may fail to accurately
+     * predict the true value. The output is bounded by the max and min values of the given isotonic contraction data.
+     * 
+     * @param {int} force 
+     * 
+     */
+    setMBar(force){
+        let mb = 8.01869 * Math.pow(0.633738, force) + 0.599493
+        this.mBar = Math.max(Math.min(4.5, mb), 0.6);
+        return true;
+    }
+    /**
+     * Custom fit exponential equation for adaptive mbar: abar = 27.41952 * (0.95465 ^ x) - 29.8085
+     * This was created by me from the limited data given in the paper and may fail to accurately
+     * predict the true value. The output is bounded by the max and min values of the given isotonic contraction data,.
+     * 
+     * @param {int} force 
+     * 
+     */
+    setABar(force){
+        let ab = 27.41952 * Math.pow(0.95465, force) - 27.78085;
+        this.aBar = Math.max(Math.min(-2.3, ab), -17.53);
+        return true;
+    }
+    /**
+    * @param {float} x 
+    */
     erfc(x) {
         const erf = math.erf(x)
         return 1 - erf;
     }
     get LambdaE(){
-        return this.x / this.xrMax;
+        return this.x / this.x_r;
     }
     get Lambda(){
         return this.x / this.x_ref;
     }
     get LambdaR(){
-        return this.x / this.x_ref;
+        return this.x_r / this.x_ref;
     }
-    get mSigma(){
-        const m_sigma = 0.5 * erfc((this.sigma_t - this.PsiPrime) / (Math.sqrt(2) * this.delta_sigma));
+    mSigma(sigma_minus_sigma_t){
+        const m_sigma = 0.5 * this.erfc(sigma_minus_sigma_t / (Math.sqrt(2) * this.delta_sigma));
         return m_sigma
     }
-    get PsiR(){
-        if(this.LambdaE == 0){
+    m_a(driving_force){
+        let xr = this.x_r;
+        
+        //shortening
+        let term1_xr = 0.5 * this.erfc((xr - (this.xrMax - this.delta_x)) / (Math.sqrt(2) * this.delta_x / 2));
+        let term1_a = 0.5 * this.erfc(-driving_force / (Math.sqrt(2) * this.delta_a));
+        let term1 = term1_xr * term1_a;
+        
+        //lengthening
+        let term2_xr = 0.5 * this.erfc((-xr + (this.xrMin + this.delta_x)) / (Math.sqrt(2) * this.delta_x / 2));
+        let term2_a = 0.5 * this.erfc(driving_force / (Math.sqrt(2) * this.delta_a));
+        let term2 = term2_xr * term2_a;
+    
+        return term1 + term2;
+    }
+    PsiR(lambdaE){
+        let le = lambdaE
+        if(le == 0){
             return 0;
         }
-        let first = Math.pow(Math.pow(this.LambdaE, 4) - 1, 2)
-        let second = Math.pow(Math.log(Math.log(Math.pow(lambdaE, 4))), 2)
+        let first = Math.pow(Math.pow(le, 4) - 1, 2)
+        let second = Math.pow(Math.log(Math.pow(le, 4)), 2)
         return (this.kappa/8) * (first + second);
     }
-    get PsiPrime(){
-        if(this.LambdaE == 0){
+    PsiPrime(lambdaE){
+        let le = lambdaE;
+        if(le == 0){
             return 0;
         }
-        let le = this.LambdaE;
         let first =  Math.pow(le, 3) * (Math.pow(le, 4) - 1);
-        let second = Math.log(le^4)/le;
-        return (this.kappa) * (first + second)
+        let second = Math.log(Math.pow(le, 4))/le;
+        return (this.kappa/2) * (first + second)
     }
-    get e(){
-        return this.PsiR - (this.LambdaE * this.PsiPrime);
+    e(lambdaE, psiR, psiPrime){
+        return psiR - (lambdaE * psiPrime);
     }
-    get Force(){
-        return this.crossSectionArea * (this.PsiPrime + this.activation)
+    DrivingForce(a, lambdaR, _e){
+        return a - (lambdaR * _e);
     }
-    getSigmaHat(activation){
-        return activation * this.PsiPrime;
-    }
-    mobility(a){
-        const m_a = (this.x_r > this.xrMin && this.x_r < this.xrMax) ? 1 : 0;
-        return this.mBar * this.mSigma * m_a;
-    }
-    updateActivation(dt, activation=true){
-        if(activation){
-            // activation rises toward mBar
-            this.activation += this.kappa * (this.mBar - this.activation) * dt;
-        } else {
-            // activation decays back to aBar
-            this.activation += this.kappa * (this.aBar - this.activation) * dt;
-        }
-    }
-    update(dt){
-        let a = this.activation;
-        let m = this.mobility(a);
 
-        let dxr_dt = m * (a - this.LambdaR * this.e);
-        this.xr += dxr_dt * dt;
+    mobility(psiPrime, driving_force){
+        let sigma_minus_sigma_t = psiPrime - this.sigma_t
+        let m_sig = this.mSigma(sigma_minus_sigma_t)
+        let ma = this.m_a(driving_force)
+        return this.mBar * m_sig * ma;
+    }
+    updateActivation(t){
+        this.activation = this.aBar * this.activationFunction(t);
+    }
+    step(dt){
+        let lambdaE = this.LambdaE;
+        let lambdaR = this.LambdaR;
+
+
+        let psiR = this.PsiR(lambdaE);
+        let psiPrime = this.PsiPrime(lambdaE);
+        let _e = this.e(lambdaE, psiR, psiPrime);
+        
+        let drivingForce = this.activation - lambdaR * _e;
+
+        let m = this.mobility(psiPrime, drivingForce);
+
+        //update xr
+        let dxr_dt = this.x_r * m * drivingForce;
+        this.x_r += dxr_dt * dt;
 
         //clamped between max and min length
-        this.xr = Math.max(this.xrMin, Math.min(this.xr, this.xrMax));
+        this.x_r = Math.max(this.xrMin, Math.min(this.x_r, this.xrMax));
+        
+        let force = this.PsiPrime(this.LambdaE)
+        return force;
+    }
+    updateLength(newLength){
+        this.x = newLength;
     }
 }
 

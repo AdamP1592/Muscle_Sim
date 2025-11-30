@@ -38,6 +38,25 @@ class PhysicsSim{
         let newMuscle = new SkeletalMuscle(index1, index2, obj1.x, obj1.y, obj2.x, obj2.y);
         this.forceAddingElements.push(newMuscle)
     }
+    /**
+     * takes in two physics objects
+     * @param {physicsObject} phisObj1 
+     * @param {physicsObject} physObj2
+     * 
+     * @returns {number} the tension between the two objects 
+     */
+    getMuscleForce(phisObj1, physObj2){
+        let vx1 = phisObj1.physicsObject.velocityX;
+        let vy1 = phisObj1.physicsObject.velocityY;
+        let m1 = phisObj1.mass;
+
+        let vx2 = physObj2.physicsObject.velocityX;
+        let vy2 = physObj2.physicsObject.velocityY;
+        let m2 = physObj2.mass;
+
+
+
+    }
     step(t){
 
         console.log("Step: ", t);
@@ -73,6 +92,8 @@ class Rect{
 
         this.color = '#575757ff'
         this.border = false;
+
+        this.dForce = 0;
     }
     update(t){
         //update position function
@@ -84,22 +105,21 @@ class Rect{
 class MoveableRect extends Rect{
     constructor(width, height, x, y, mass){
         super(width, height, x, y);
-        this.mass = mass;
         this.physics = new physicsObject(x, y, mass);
         this.moveable = true;
 
         this.color = '#f1ff74ff'
+
+        this.dv = [0, 0];
     }
     addForce(forceX, forceY){
         this.physics.addForce(forceX, forceY)
     }
     update(t){
-        this.physics.move(t);
+        this.dv = this.physics.move(t);
         
         this.x = this.physics.x;
         this.y = this.physics.y;
-        
-        
 
         return [this.physics.x, this.physics.y]
     }
@@ -118,7 +138,7 @@ class SmoothMuscle extends Muscle{
 
         super(index1, index2)
 
-        this.muscle = new fiber();
+        this.muscle = new SmoothMuscle();
         
         //sets l_m
         this.updateLength(obj1X, obj2X, obj1Y, obj2Y);
@@ -166,7 +186,7 @@ class SkeletalMuscle extends Muscle{
     }
     update(obj1, obj2, dt){
         this.muscle.updateActivation(dt, this.active);
-        this.muscle.update(dt);
+        this.muscle.step(dt);
 
         let force = this.muscle.force;
 

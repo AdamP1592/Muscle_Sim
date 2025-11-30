@@ -52,10 +52,14 @@ class physicsObject{
 
         return true;
     }
-    move(t){
-        let newState = this.predictStep(t);
+    move(dt){
+        let oldVX = this.velocityX;
+        let oldVY = this.velocityY;
+
+        let newState = this.predictStep(dt);
         let vx = newState["newVelX"];
         let vy = newState["newVelY"];
+        
 
         //flat
         this.velocityX = vx - (this.friction_constant * vx);
@@ -64,7 +68,10 @@ class physicsObject{
         this.x = newState["newX"];
         this.y = newState["newY"];
 
-        return true;
+        let deltaVX = this.velocityX - oldVX;
+        let deltaVY = this.velocityY - oldVY;
+
+        return [deltaVX, deltaVY];
     }
     
 }
