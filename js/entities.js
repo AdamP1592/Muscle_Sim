@@ -1,3 +1,18 @@
+// JS is stupid and is single inheritance so this is the best I could come up with
+function copyPrototypeMethods(target, source) {
+  const proto = Object.getPrototypeOf(source);
+  for (const name of Object.getOwnPropertyNames(proto)) {
+    
+    if (name === "constructor") continue;
+    const value = proto[name];
+    if (typeof value === "function") {
+      target[name] = value.bind(target);
+    }
+  }
+}
+
+
+
 class Obj{
     constructor(x, y, color){
         this.x = x;
@@ -9,6 +24,7 @@ class Obj{
 class MoveableObj extends Obj{
     constructor(x, y, mass){
         super(x, y, "#000000");
+        this.moveable = true;
         this.physics = new PhysicsObject(x, y, mass)
     }
     /**
@@ -50,37 +66,21 @@ class Rect extends Obj{
         //add force to object function
     }
 }
+//also extends moveable obj
 class MoveableRect extends Rect{
     constructor(width, height, x, y, mass){
         super(width, height, x, y);
+        //extend moveable obj
+        let mov = new MoveableObj(x, y, mass)
+        Object.assign(this, mov);
+        copyPrototypeMethods(this, mov);
+
         this.physics = new PhysicsObject(x, y, mass);
         this.moveable = true;
 
         this.color = '#f1ff74ff'
-
         this.componentForces = [0, 0];
-    }
-    /**
-     * Takes in the component forces and adds them to the existing forces
-     * Forces are to be reset every time update(t) is called
-     * @param {float} forceX 
-     * @param {float} forceY 
-     */
-    addForce(forceX, forceY){
-        this.physics.addForce(forceX, forceY)
-    }
-    /**
-     * Updates the position of the object using the net force accumulated by addForce(fx, fy)
-     * @param {float} dt 
-     * @returns [x, y]
-     */
-    update(dt){
-        this.componentForces = this.physics.move(dt);
-        
-        this.x = this.physics.x;
-        this.y = this.physics.y;
 
-        return [this.physics.x, this.physics.y]
     }
 }
 class Muscle{

@@ -22,6 +22,11 @@ var lastFrameTime = null;
 var oldWidth = 0;
 var oldHeight = 0;
 
+//hover event stuff
+
+var mouseHoverX = 0;
+var mouseHoverY = 0;
+
 function create_onclick_events(){
     let buttons = document.getElementsByClassName("spawn_button");
     //create all spawn button events
@@ -224,20 +229,6 @@ function resizeCanvas(){
   
   
 }
-window.addEventListener("load", function() {
-  sim = new PhysicsSim();
-  demo1();
-
-  canvas = document.getElementById("phys_sim");
-  ctx = canvas.getContext("2d");
-
-  canvas.addEventListener('click', leftClickCanvas);
-
-  create_onclick_events();
-  lastFrameTime = performance.now();
-  resizeCanvas();
-  requestAnimationFrame(draw);
-});
 /**
  * sets up the first demo visualization of the simulation(a cube following a circular motion)
  */
@@ -299,8 +290,6 @@ function leftClickCanvas(event) {
   let borderCount = 0;
   //to prevent having to index a list
   let objectsWithBorders = {};
-  console.log("Attempting to make a muscle")
-  console.log(`MouseX: ${mouseY}, MouseY: ${mouseX}, graphX: ${mouseX/scalingFactor}, graphY: ${mouseY/scalingFactor}`)
   for(let i = 0; i < sim.objects.length; i++){
     let obj = sim.objects[i];
 
@@ -346,10 +335,48 @@ function leftClickCanvas(event) {
     sim.createMuscle(objects[0][1], objects[1][1], objects[0][0], objects[1][0])
   }
 }
+function checkHoverEvent(event){
+  mouseHoverX = event.clientX - rect.left;
+  mouseHoverY = event.clientY - rect.top;
+}
+/**
+ * Assign all events on mouseover
+ */
+function canvasEntered(){
+  document.addEventListener("keydown", keyPressed);
+  document.addEventListener("keyup", keyReleased);
+  canvas.addEventListener('click', leftClickCanvas);
+  canvas.addEventListener('mousemove', checkHoverEvent)
+  
+}
+/**
+ * Remove all events on mouseout
+ */
+function canvasLeave(){
+  document.removeEventListener("keydown", keyPressed);
+  document.removeEventListener("keyup", keyReleased);
+  canvas.removeEventListener('click', leftClickCanvas);
+  canvas.removeEventListener('mousemove', checkHoverEvent)
+  
+}
 
 //window events
 window.addEventListener("resize", resizeCanvas)
 
-//key events
-document.addEventListener("keydown", keyPressed);
-document.addEventListener("keyup", keyReleased);
+
+
+window.addEventListener("load", function() {
+  sim = new PhysicsSim();
+  demo1();
+
+  canvas = document.getElementById("phys_sim");
+  ctx = canvas.getContext("2d");
+
+  canvas.addEventListener('mouseover', canvasEntered);
+  canvas.addEventListener('mouseout', canvasLeave);
+
+  create_onclick_events();
+  lastFrameTime = performance.now();
+  resizeCanvas();
+  requestAnimationFrame(draw);
+});
