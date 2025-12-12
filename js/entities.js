@@ -29,11 +29,13 @@ class Obj{
         this.y = y;
         this.color = color
         this.border = false;
+        this.muscles = []
     }
     getObjectInfo(){
         return {x: this.x,
                 y: this.y}
     }
+
 }
 class MoveableObj extends Obj{
     constructor(x, y, mass){

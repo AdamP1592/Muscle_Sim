@@ -7,6 +7,7 @@ class PhysicsSim{
         this.forceAddingElements = [] 
         this.objects = []
         this.t = 0
+        this.connections = new Map();
     }
     /**
      * Creates a fixed square at the graphing coordinates
@@ -61,6 +62,7 @@ class PhysicsSim{
 
         let newMuscle = new SkeletalMuscle(index1, index2, obj1.x, obj1.y, obj2.x, obj2.y);
         this.forceAddingElements.push(newMuscle)
+
         return true
     }
     /**

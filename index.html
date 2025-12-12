@@ -1,6 +1,6 @@
 <html>
     <header>
-        <link rel="stylesheet" href="./css/main.css"">
+        <link rel="stylesheet" href="./css/main.css">
     </header>
     <body autofocus>
         <div id="main">
@@ -19,10 +19,21 @@
                     </li>
                 </ul>
                 <div id = "controls">
-                    <input type="checkbox" id="Inspect">
-                    <label id = "inspectLabel">Inspect</label>
+                    <ul id = "controlList">
+                        <li id = "playWrapper" class="controlButton">
+                            
+                        </li>
+                        <li id = "inspectWrapper" class="controlButton">
+                            <input type="checkbox" id="inspect" title="Inspect">
+                            <label id = "inspectLabel">Inspect</label>
+                        </li>
+                    </ul>
+                    
                 </div>
             </div>
+        </div>
+        <div id = "graphFooter">
+            <button id="pausePlay" class = "play"></button>
         </div>
         <div id="contextMenu" class = "hidden absolutePos">
         </div>

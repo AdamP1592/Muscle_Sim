@@ -18,8 +18,11 @@ var startTime = 0;
 //for ctrl + (key) events
 var controlPressed = false;
 
+//for inspecting element values
+var inspection = false;
+
 //for client bounding rect
-var rect = null;
+var canvasRect = null;
 
 //for property view
 var propView = null;
@@ -95,8 +98,8 @@ function convertClientCoordsToGraph(x, y, debug=false){
     y -= window.scrollY;
   }
   */
-  const canvasX = x - Math.max(0, rect.left);
-  const canvasY = y - Math.max(0, rect.top);
+  const canvasX = x - Math.max(0, canvasRect.left);
+  const canvasY = y - Math.max(0, canvasRect.top);
   const graphX = canvasX / scalingFactor;
   const graphY = canvasY / scalingFactor;
   if(debug){
@@ -105,9 +108,9 @@ function convertClientCoordsToGraph(x, y, debug=false){
     ScrollX: ${window.scrollX}, ScrollY:${window.scrollY}
     CanvasX: ${canvasX}, CanvasY:${canvasY}
     GraphX: ${graphX}, GraphY: ${graphY}
-    RectLeft: ${rect.left}, RectTop:${rect.top}
+    RectLeft: ${canvasRect.left}, RectTop:${canvasRect.top}
     `);
-    console.log(rect)
+    console.log(canvasRect)
   }
 
   return [graphX, graphY]
@@ -298,25 +301,32 @@ function drawGrid(){
     //draw x lines
     ctx.fillText(graphingCoordString, canvasCoord, 0);
     ctx.moveTo(canvasCoord, 0);
-    ctx.lineTo(canvasCoord, rect.height);
+    ctx.lineTo(canvasCoord, canvasRect.height);
     ctx.stroke();
     
     //draw y lines
     ctx.fillText(graphingCoordString, 0, canvasCoord);
     ctx.moveTo(0, canvasCoord);
-    ctx.lineTo(rect.width, canvasCoord);
+    ctx.lineTo(canvasRect.width, canvasCoord);
     ctx.stroke();
   }
   
 }
 function resizeCanvas(){
-  rect = canvas.getBoundingClientRect();
 
-  canvas.width = rect.width;
-  canvas.height = rect.height;
+  let graphingFooter = document.getElementById("graphFooter");
+  let interactions = document.getElementById("interactions")
+
+  let interactionRect = interactions.getBoundingClientRect()
+
+  canvasRect = canvas.getBoundingClientRect();
+
+  canvas.width = canvasRect.width;
+  canvas.height = canvasRect.height;
   
   let main = document.getElementById("main");
   let body = document.getElementsByTagName("body")[0];
+  let pauseButton = document.getElementById("pausePlay");
   //if canvas + min width interactions is > window width
   if(canvas.width + 100 > window.innerWidth){
     body.classList.add("noMargin");
@@ -326,12 +336,9 @@ function resizeCanvas(){
     main.classList.remove("justify-left")
     body.classList.remove("noMargin");
   }
-  rect = canvas.getBoundingClientRect();
+  canvasRect = canvas.getBoundingClientRect();
 
-  console.log(canvas)
-  console.log(rect.left)
-
-  scalingFactor = rect.width/maxX;
+  scalingFactor = canvasRect.width/maxX;
 
   oldWidth = canvas.width;
   oldHeight = canvas.height;
@@ -341,11 +348,20 @@ function resizeCanvas(){
   propView.style.height = (PropertyViewHeight * scalingFactor);
   propView.style.fontSize = (PropertyViewFontSize * scalingFactor);
   
+  let pauseBoundingRect = pauseButton.getBoundingClientRect()
+  let height = 3.5 * scalingFactor;
+  pauseButton.style.height = height + "px";
 
-  
+  if(pauseButton.classList.contains("play")){
+    pauseButton.style.borderWidth = `${height/2}px 0px ${height/2}px ${height}px`;
+  }else{
+    pauseButton.style.borderWidth = `0px 0px 0px ${height/2}px`
+  }
+  graphingFooter.style.width = interactionRect.width + canvasRect.width + "px";
+  graphingFooter.style.left = Math.max(0, canvasRect.left) + "px";
   //let spawnButtons = document.getElementsByClassName("spawn_button");
   
-  rect = canvas.getBoundingClientRect();
+  canvasRect = canvas.getBoundingClientRect();
 }
 /**
  * sets up the first demo visualization of the simulation(a cube following a circular motion)
@@ -383,7 +399,9 @@ function keyPressed(event){
     controlPressed = true;
   }
   if(event.key === " "){
+    event.preventDefault()
     isPaused = !isPaused;
+    pauseButtonClicked();
   }
 }
 function keyReleased(event){
@@ -450,6 +468,11 @@ function leftClickCanvas(event) {
   }
 }
 function checkHoverEvent(event){
+
+  if(!inspection){
+    return;
+  }
+
   mouseHoverX = event.clientX;
   mouseHoverY = event.clientY;
   
@@ -468,6 +491,8 @@ function checkHoverEvent(event){
         len += 1;
         objInfo += `${key}: ${Math.round(objInfoDict[key] * 100)/100}\n`
       }
+
+
       //0.75 accounts for line spacing changing it's size as the text
       //gets bigger
       let height = (PropertyViewFontSize * len) + (0.75 * len);
@@ -501,7 +526,44 @@ function canvasLeave(){
   canvas.removeEventListener('mousemove', checkHoverEvent)
   
 }
+function setInspection(){
+  inspection = !inspection;
+  canvas.style.cursor =  inspection? "help": ""; 
+}
+function pauseButtonClicked(){
+  let btn = document.getElementById("pausePlay");
+  let btnRect = btn.getBoundingClientRect();
+  let height = btnRect.height;
+  if(btn.classList.contains("pause")){
+    btn.classList.remove("pause");
+    btn.classList.add("play");
+    btn.style.borderWidth = `${height/2}px 0px ${height/2}px ${height}px`;
+    isPaused = false;
+    
+  }
+  else{
 
+    btn.classList.remove("play");
+    btn.classList.add("pause");
+    btn.style.borderWidth = `0px 0px 0px ${height/2}px`;
+    isPaused = true;    
+  }
+  
+}
+function setupInteractionEvents(){
+  document.addEventListener("keydown", keyPressed);
+  document.addEventListener("keyup", keyReleased);
+
+  canvas.addEventListener('mouseover', canvasEntered);
+  canvas.addEventListener('mouseout', canvasLeave);
+
+  let inspectCheckbox = document.getElementById("inspect");
+  inspectCheckbox.addEventListener("change", setInspection)
+
+  let pauseButton = document.getElementById("pausePlay")
+  pauseButton.addEventListener("click", pauseButtonClicked);
+
+}
 //window events
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);
@@ -520,11 +582,7 @@ window.addEventListener("load", function() {
   canvas = document.getElementById("phys_sim");
   ctx = canvas.getContext("2d");
 
-  document.addEventListener("keydown", keyPressed);
-  document.addEventListener("keyup", keyReleased);
-
-  canvas.addEventListener('mouseover', canvasEntered);
-  canvas.addEventListener('mouseout', canvasLeave);
+  setupInteractionEvents()
 
   create_onclick_events();
   lastFrameTime = performance.now();
