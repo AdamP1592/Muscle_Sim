@@ -5,7 +5,7 @@
     <body>
         <div id="main">
             <canvas id="phys_sim"></canvas>
-            <div id="objects">
+            <div id="interactions">
                 <ul id="button_list">
                     <li class="phys_obj">
                         <button class="spawn_button" id = "fixed_spawn">
@@ -18,7 +18,16 @@
                         </button>
                     </li>
                 </ul>
+                <div id = "controls">
+                    <input type="checkbox" id="Inspect">
+                    <label id = "inspectLabel">Inspect</label>
+                </div>
             </div>
+        </div>
+        <div id="contextMenu" class = "hidden absolutePos">
+        </div>
+        <div id="propertyView" class = "hidden absolutePos">
+            Sample Content
         </div>
     </body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.0.0/math.js"></script>

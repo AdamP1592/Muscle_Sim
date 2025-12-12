@@ -1,17 +1,27 @@
 // JS is stupid and is single inheritance so this is the best I could come up with
-function copyPrototypeMethods(target, source) {
-  const proto = Object.getPrototypeOf(source);
-  for (const name of Object.getOwnPropertyNames(proto)) {
-    
-    if (name === "constructor") continue;
-    const value = proto[name];
-    if (typeof value === "function") {
-      target[name] = value.bind(target);
+function copyPrototypeMethods(target, source, rebind = false) {
+    const proto = Object.getPrototypeOf(source);
+    for (const name of Object.getOwnPropertyNames(proto)) {
+        if (name === "constructor") continue;
+        
+        desc = Object.getOwnPropertyDescriptor(proto, name);
+        // Handle getters/setters
+        if (desc.get || desc.set) {
+            if (!target.hasOwnProperty(name) || rebind) {
+                Object.defineProperty(target, name, desc);
+            }
+            continue;
+        }
+
+        // Handle normal methods
+        if (typeof desc.value === "function") {
+            if (!target.hasOwnProperty(name) || rebind) {
+                target[name] = desc.value.bind(target);
+            }
+        }
+
     }
-  }
 }
-
-
 
 class Obj{
     constructor(x, y, color){
@@ -19,6 +29,10 @@ class Obj{
         this.y = y;
         this.color = color
         this.border = false;
+    }
+    getObjectInfo(){
+        return {x: this.x,
+                y: this.y}
     }
 }
 class MoveableObj extends Obj{
@@ -43,6 +57,16 @@ class MoveableObj extends Obj{
         this.y = this.physics.y;
 
         return [this.physics.x, this.physics.y]
+    }
+
+    getObjectInfo(){
+        let objInfo = {x: this.x,
+                y: this.y, 
+                vx: this.physics.velocityX,
+                vy: this.physics.velocityY
+            }
+
+        return objInfo
     }
 }
 
@@ -73,9 +97,8 @@ class MoveableRect extends Rect{
         //extend moveable obj
         let mov = new MoveableObj(x, y, mass)
         Object.assign(this, mov);
-        copyPrototypeMethods(this, mov);
-
-        this.physics = new PhysicsObject(x, y, mass);
+        // Primary parent methods. this rebinds getters and setters
+        copyPrototypeMethods(this, mov, true);
         this.moveable = true;
 
         this.color = '#f1ff74ff'
@@ -111,6 +134,13 @@ class Muscle{
     updateLength(x1, x2, y1, y2){
         // console(`Updating length:\n x1:${x1}, y1:${y1}, x2:${x2}, y2:${y2}\nLength: ${Math.sqrt( ((x1 - x2)** 2) + ((y1 - y2) ** 2))}`)
         this.muscle.x = this.getLength(x1, x2, y1, y2)
+    }
+    
+    getObjectInfo(){
+        return {
+            obj1Index:this.index1,
+            obj2Index:this.index2,
+        }
     }
 }
 class SmoothMuscle extends Muscle{
@@ -185,7 +215,9 @@ class SkeletalMuscle extends Muscle{
             mBar_scaleFactor:8.01869
             
         }
-        this.muscle = new SkeletalFiber(this.getLength(x1, x2, y1, y2), params)
+        this.force = 0;
+        this.muscle = new SkeletalFiber(this.getLength(x1, x2, y1, y2), params);
+        this.t = 0;
 
         //ensures no default stimulation
         this.muscle.setStimulation(0, "none");
@@ -204,10 +236,12 @@ class SkeletalMuscle extends Muscle{
         // console("T in phys sim:" + t)
         this.muscle.updateActivation(t);
         let force = this.muscle.step(dt);
-        
+
+        this.force = force;
+        this.t = t;
         //console.log("Force:", force)
 
-        let length = Math.max(this.muscle.x, 1e-8);
+        let length = Math.max(this.muscle.x, 1e-6);
 
         let dx = obj2.x - obj1.x;
         let dy = obj2.y - obj1.y;
@@ -233,5 +267,14 @@ class SkeletalMuscle extends Muscle{
     updateLength(x1, x2, y1, y2){
         // console(`Updating length:\n x1:${x1}, y1:${y1}, x2:${x2}, y2:${y2}\nLength: ${Math.sqrt( ((x1 - x2)** 2) + ((y1 - y2) ** 2))}`)
         this.muscle.x = this.getLength(x1, x2, y1, y2)
+    }
+    getObjectInfo(){
+        return {
+            obj1Index: this.index1,
+            obj2Index: this.index2,
+            activation: this.muscle.activation,
+            length: this.muscle.x,
+            force: this.force
+        }
     }
 }
