@@ -1,6 +1,7 @@
 <html>
     <header>
         <link rel="stylesheet" href="./css/main.css">
+        <meta charset="utf-8">
     </header>
     <body autofocus>
         <div id="main">
@@ -19,22 +20,48 @@
                     </li>
                 </ul>
                 <div id = "controls">
-                    <ul id = "controlList">
-                        <li id = "playWrapper" class="controlButton">
-                            
-                        </li>
-                        <li id = "inspectWrapper" class="controlButton">
-                            <input type="checkbox" id="inspect" title="Inspect">
-                            <label id = "inspectLabel">Inspect</label>
-                        </li>
-                    </ul>
+                    <table id = "controlTable">
+                        <tbody>
+                            <tr>
+                                <th id = "inspectWrapper" class="controlButtonSection">
+                                    <label id = "inspectLabel" class="controlLabel">
+                                        <input type="checkbox" id="inspect" title="Inspect" class="controlCheckbox">
+                                        <span class ="box" aria-hidden="true"></span> 
+                                    </label>
+                                </th>
+                                <th id = "trashWrapper" class="controlButtonSection">
+                                    <label id = "trashLabel" class="controlLabel">
+                                        <input type="checkbox" id="trash" title="Trash" class="controlCheckbox">
+                                        <span class ="box" aria-hidden="true"></span>    
+                                    </label>
+                                </th>
+                          
+                            </tr>
+                            <tr>
+                                <th id = "moveWrapper" class="controlButtonSection">
+                                    <label id = "moveLabel" class="controlLabel">
+                                        <input type="checkbox" id="move" title="Move" class="controlCheckbox">
+                                        <span class ="box" aria-hidden="true"></span>    
+                                    </label>
+                                </th> 
+                                <th id = "configureWrapper" class="controlButtonSection">
+                                    <label id = "configureLabel" class="controlLabel">
+                                        <input type="checkbox" id="configure" title="Configure" class="controlCheckbox">
+                                        <span class ="box" aria-hidden="true"></span>    
+                                    </label>
+                                </th>                 
+                            </tr>
+                        </tbody>
+                    </table>
+
                     
                 </div>
             </div>
+            <div id = "graphFooter">
+                <button id="pausePlay" class = "play"></button>
+            </div>
         </div>
-        <div id = "graphFooter">
-            <button id="pausePlay" class = "play"></button>
-        </div>
+
         <div id="contextMenu" class = "hidden absolutePos">
         </div>
         <div id="propertyView" class = "hidden absolutePos">

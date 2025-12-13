@@ -145,7 +145,6 @@ function click_released(event){
   let y = event.clientY;
 
   let [graphX, graphY] = convertClientCoordsToGraph(x, y, true)
-  console.log(x, y, graphX, graphY)
   //in bounds
   if(!( graphX < 0 || graphX < 0 || graphX > maxX || graphX > maxY)){
 
@@ -357,11 +356,15 @@ function resizeCanvas(){
   }else{
     pauseButton.style.borderWidth = `0px 0px 0px ${height/2}px`
   }
+
+  canvasRect = canvas.getBoundingClientRect();
+
   graphingFooter.style.width = interactionRect.width + canvasRect.width + "px";
-  graphingFooter.style.left = Math.max(0, canvasRect.left) + "px";
+  graphingFooter.style.top = Math.max(0, canvasRect.top + canvasRect.height) + "px";
+  graphingFooter.style.height = 5.5 * scalingFactor;
   //let spawnButtons = document.getElementsByClassName("spawn_button");
   
-  canvasRect = canvas.getBoundingClientRect();
+
 }
 /**
  * sets up the first demo visualization of the simulation(a cube following a circular motion)
@@ -526,9 +529,32 @@ function canvasLeave(){
   canvas.removeEventListener('mousemove', checkHoverEvent)
   
 }
-function setInspection(){
+function inspectionClicked(event){
+  checkboxClicked(event);
   inspection = !inspection;
   canvas.style.cursor =  inspection? "help": ""; 
+}
+function deleteClicked(event){
+  checkboxClicked(event);
+}
+function moveClicked(event){
+  checkboxClicked(event);
+}
+function configureClicked(event){
+  checkboxClicked(event);
+}
+
+function checkboxClicked(e){
+  let targetId = e.target.id;
+  let checkboxes = document.getElementsByClassName("controlCheckbox");
+  for(let i = 0; i < checkboxes.length; i++){
+    let checkbox = checkboxes[i];
+    let id = checkbox.id;
+    if(id != targetId){
+      checkbox.checked = false;
+    }
+  }
+
 }
 function pauseButtonClicked(){
   let btn = document.getElementById("pausePlay");
@@ -558,7 +584,21 @@ function setupInteractionEvents(){
   canvas.addEventListener('mouseout', canvasLeave);
 
   let inspectCheckbox = document.getElementById("inspect");
-  inspectCheckbox.addEventListener("change", setInspection)
+
+  let controlCheckboxes = document.getElementsByClassName("controlCheckbox");
+
+  let checkboxFunctions = {
+    "move": moveClicked,
+    "trash": deleteClicked,
+    "inspect": inspectionClicked,
+    "configure": configureClicked
+  }
+  for(let i = 0; i < controlCheckboxes.length; i++){
+    let checkbox = controlCheckboxes[i];
+    
+    checkbox.addEventListener("change", checkboxFunctions[checkbox.id])
+  }
+  
 
   let pauseButton = document.getElementById("pausePlay")
   pauseButton.addEventListener("click", pauseButtonClicked);

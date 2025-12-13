@@ -1,3 +1,4 @@
+/* Standard element positioning */
 *{
     margin: 0;
     padding: 0;
@@ -9,9 +10,10 @@ body{
     margin:0;
 }
 #main{
-    height:80%;
+    height:90%;
     min-height: 300px;
     max-height: 100vh;
+    width:auto;
     display:flex;
     flex-wrap:nowrap;
     justify-content: center;
@@ -23,6 +25,11 @@ canvas{
     aspect-ratio:1;
     background-color: rgb(126, 126, 126);
 }
+ul{
+    list-style:none;
+}
+
+/* Section that deals with interacting with the sim */
 #interactions{
     position:relative;
     width: 100%;
@@ -32,16 +39,127 @@ canvas{
     vertical-align: top;
     background-color: rgb(194, 194, 194);
 }
-#button_list{
-    width: 100%;
-}
-ul{
-    list-style-type: none;
-}
+
+
+/* Controls Section */
 .noTransition{
     transition: none !important;
     animation: none !important;
 }
+
+.controlLabel{
+    display:inline-flex;
+    align-items:center;
+    gap: 0.5rem;
+}
+.controlCheckbox{
+    position:absolute;
+    opacity:0;
+    aspect-ratio:1;
+    width:20%;
+
+}
+
+.controlLabel .box {
+    width: calc(1.5em + 4px);
+    aspect-ratio:1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    user-select: none;
+    box-sizing:border-box;
+    border: 2px solid transparent;
+    border-radius: 5px;
+
+}
+
+#inspectLabel>.box::before{
+    content: "🔍";
+}
+#trashLabel>.box::before{
+    font-size: 1.5em;
+    content: "🗑";
+}
+#moveLabel>.box::before{
+    content: "✋"
+}
+#configureLabel>.box::before{
+    font-size: 1.25em;
+    content: "⚙"
+}
+
+.controlLabel .box::before {
+    display: block;
+    line-height: 1;
+}
+.controlLabel input:checked + .box {
+    border-color:rgba(100, 100, 100, 0.6);
+    background-color:rgba(100, 100, 100, 0.3);
+}
+.controlLabel:hover .box{
+    border-color:rgba(100, 100, 100, 0.3);
+    background-color:rgba(100, 100, 100, 0.1);
+}
+    
+.controlButtonSection{
+    padding-top:1%;
+    padding-bottom:1%;
+}
+
+#controls{
+    position:absolute;
+    width:90%;
+    padding:5%;
+    bottom:0;
+    background-color:rgb(112, 174, 240);
+    display:flex;
+    justify-content:center;
+}
+
+/* Spawn object section */
+.phys_obj{
+    width:100%;
+    max-height:60px;
+    
+    height:10%;
+    min-height:30px;
+    font-size: 100%;
+}
+.spawn_button:hover{
+    background-color:rgb(80, 157, 86);   
+}
+.spawn_button{
+    width:100%;
+    height:100%;
+    background-color:rgb(100, 177, 106);
+    border:none;
+    cursor: grab;
+    padding:5%;
+}
+
+
+/* Hover Event Stuff*/
+#propertyView{
+    display:block;
+    background-color: rgb(255, 255, 255);
+    aspect-ratio:1;
+    border-radius: 5px;
+    text-align:left;
+    padding:5px;
+}
+
+.hover_with_obj{
+    cursor:grabbing;
+}
+.hidden{
+    display:none !important;
+}
+.absolutePos{
+    position: absolute;
+}
+
+/* Canvas Footer Stuff */
 #pausePlay{
     box-sizing:border-box;
     transition: 100ms all ease;
@@ -60,63 +178,8 @@ ul{
 }
 #graphFooter{
     position:absolute;
-    width:0;
-    height: 3%;
+    width:100%;
+    height: 1.25%;
+    top:100%;
     background-color: rgb(47, 199, 85);
-}
-#inspect{
-    aspect-ratio:1;
-    width:20%;
-}
-#inspect:hover{
-    cursor:help;
-}
-.controlButton{
-    width:100%;
-    padding-top:1%;
-    padding-bottom:1%;
-}
-.spawn_button{
-    width:100%;
-    height:100%;
-    background-color:rgb(100, 177, 106);
-    border:none;
-    cursor: grab;
-    padding:5%;
-}
-.spawn_button:hover{
-    background-color:rgb(80, 157, 86);
-    
-}
-#controls{
-    position:absolute;
-    width:90%;
-    padding:5%;
-    bottom:0;
-    background-color:rgb(112, 174, 240);
-}
-.phys_obj{
-    width:100%;
-    max-height:60px;
-    
-    height:10%;
-    min-height:30px;
-    font-size: 100%;
-}
-.hover_with_obj{
-    cursor:grabbing;
-}
-.hidden{
-    display:none !important;
-}
-.absolutePos{
-    position: absolute;
-}
-#propertyView{
-    display:block;
-    background-color: rgb(255, 255, 255);
-    aspect-ratio:1;
-    border-radius: 5px;
-    text-align:left;
-    padding:5px;
 }
