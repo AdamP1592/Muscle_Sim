@@ -7,7 +7,7 @@ class PhysicsSim{
         this.forceAddingElements = [] 
         this.objects = []
         this.t = 0
-        this.connections = new Map();
+        this.connections = new BiMap();
     }
     /**
      * Creates a fixed square at the graphing coordinates
@@ -35,7 +35,7 @@ class PhysicsSim{
         let mass = 0.1;
         let rect = new MoveableRect(width, height, x, y, mass)
         this.fixedObjects.push(rect)
-        this.objects.push(rect)
+        this.objects.push(rect);
     }
     /**
      * Creates a muscle attached to obj1 and obj2
@@ -60,26 +60,12 @@ class PhysicsSim{
             }
         }
 
+        this.connections.put(index1, this.forceAddingElements.length);
+        this.connections.put(index2, this.forceAddingElements.length);
         let newMuscle = new SkeletalMuscle(index1, index2, obj1.x, obj1.y, obj2.x, obj2.y);
         this.forceAddingElements.push(newMuscle)
 
         return true
-    }
-    /**
-     * takes in two physics objects
-     * @param {physicsObject} phisObj1 
-     * @param {physicsObject} physObj2
-     * 
-     * @returns {number} the tension between the two objects 
-     */
-    getMuscleForce(phisObj1, physObj2){
-        let vx1 = phisObj1.physicsObject.velocityX;
-        let vy1 = phisObj1.physicsObject.velocityY;
-        let m1 = phisObj1.mass;
-
-        let vx2 = physObj2.physicsObject.velocityX;
-        let vy2 = physObj2.physicsObject.velocityY;
-        let m2 = physObj2.mass;
     }
     /**
      * Takes in dt and performs a step, updating all objects and forces
@@ -90,12 +76,18 @@ class PhysicsSim{
         //console.log("Step: ", this.t);
         // updates objects to new positions
         for(let i = 0; i < this.objects.length; i++){
+            if(this.objects[i] === null){
+                continue;
+            }
             this.objects[i].update(dt);
         }
         //update all muscles and add forces to the objects the muscle is connected to
         for(let i = 0; i < this.forceAddingElements.length; i++){
             // console("ElementsLoop")
             let element = this.forceAddingElements[i];
+            if(element === null){
+                continue;
+            }
             // console(element)
 
             let obj1 = this.objects[element.index1];

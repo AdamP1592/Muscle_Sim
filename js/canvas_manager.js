@@ -20,6 +20,9 @@ var controlPressed = false;
 
 //for inspecting element values
 var inspection = false;
+var trash = false;
+var move = false;
+var configure = false;
 
 //for client bounding rect
 var canvasRect = null;
@@ -32,6 +35,8 @@ var lastFrameTime = null;
 
 //pausing
 var isPaused = false;
+var totalPausedTime = 0;
+var pauseStartTime = 0;
 
 //resizeEventStuff
 var oldWidth = 0;
@@ -82,7 +87,7 @@ function isWithinRect(x, y, rect, positioning="centered"){
  * @param {*} y 
  * @returns 
  */
-function convertClientCoordsToGraph(x, y, debug=false){
+function convertClientCoordsToGraph(x, y, debug = false){
 
   x += window.scrollX;
   y += window.scrollY;
@@ -144,7 +149,7 @@ function click_released(event){
   let x = event.clientX;
   let y = event.clientY;
 
-  let [graphX, graphY] = convertClientCoordsToGraph(x, y, true)
+  let [graphX, graphY] = convertClientCoordsToGraph(x, y)
   //in bounds
   if(!( graphX < 0 || graphX < 0 || graphX > maxX || graphX > maxY)){
 
@@ -182,7 +187,9 @@ function onclick_event(event){
 function drawMuscles(){
   for(let i = 0; i < sim.forceAddingElements.length; i++){
     let element = sim.forceAddingElements[i];
-
+    if(element == null){
+      continue;
+    }
     let obj1 = sim.objects[element.index1];
     let obj2 = sim.objects[element.index2];
 
@@ -210,13 +217,16 @@ function drawMuscles(){
 
   }
 }
-function drawElements(){
+function drawObjects(){
   ctx.beginPath();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for(let i = 0; i < sim.objects.length; i++){
 
     let obj = sim.objects[i];
+    if(obj === null){
+      continue;
+    }
 
     ctx.fillStyle = obj.color;
 
@@ -248,13 +258,12 @@ function draw(currentTime){
   //dt is 1ms, there are 30 fps, elapsed time is 
   if(!isPaused){
     let currentTimeSeconds = currentTime/1000;
-    let stepCount = Math.round((currentTimeSeconds - sim.t)  / dt);
+    let stepCount = Math.floor(((currentTimeSeconds - totalPausedTime) - sim.t)  / dt);
     //console.log(elapsedTime, stepCount)
     for(let i = 0; i < stepCount; i++){
       sim.step(dt);
     }
   }
-
   if (elapsedTime > 1000/fps){
     //every second
     // in case fps is low, the sim adjusts each subsequent number
@@ -271,7 +280,7 @@ function draw(currentTime){
     // draw muscles
     drawMuscles();
     // draw rects
-    drawElements();
+    drawObjects();
       
     // update sim 
     lastFrameTime = currentTime;
@@ -403,7 +412,7 @@ function keyPressed(event){
   }
   if(event.key === " "){
     event.preventDefault()
-    isPaused = !isPaused;
+
     pauseButtonClicked();
   }
 }
@@ -412,6 +421,8 @@ function keyReleased(event){
     controlPressed = false;
   }
 }
+
+inspect
 
 /**
  * A click event used for muscle creation. 
@@ -422,42 +433,49 @@ function keyReleased(event){
  */
 function leftClickCanvas(event) {
   event.preventDefault();
-  const[graphX, graphY] = convertClientCoordsToGraph(event.clientX, event.pageY, true)
+  const[graphX, graphY] = convertClientCoordsToGraph(event.clientX, event.pageY)
 
   let borderCount = 0;
   //to prevent having to index a list
   let objectsWithBorders = {};
   for(let i = 0; i < sim.objects.length; i++){
     let obj = sim.objects[i];
-
-    if(controlPressed){
-      //all squares are positioned center to x and y
-
-      //if there was a square that got clicked
-      if (isWithinRect(graphX, graphY, obj)) {
-          console.log("Selecting: ", i)
-          //if it hasn't been clicked yet, add it to the list of clicked
-          if(obj.border == false){
-            obj.border = true;
-            objectsWithBorders[i] = obj;
-            borderCount += 1;
-          }else{
-            //if it has been clicked, remove the border
-            obj.border = false;
-          }
+    if(obj === null){
+      continue;
+    }
+    //if there was a square that got clicked
+    if (isWithinRect(graphX, graphY, obj)) {
+      // if the trash control option is selected delete what was clicked and all connected muscles
+      if(trash){
+        let connectedMuscles = sim.connections.forwardGet(i);
+        for(let muscleIndex of connectedMuscles){
+          sim.forceAddingElements[muscleIndex] = null;
+        }
+        sim.objects[i] = null;
+        break;
       }
-      else{
-        //if there is a border on a square and it wasn't clicked
-        if(obj.border){
+      // if control was pressed, add a border. If two have borders make a muscle
+      else if(controlPressed){
+      //all squares are positioned center to x and y
+    
+        //if it hasn't been clicked yet, add it to the list of clicked
+        if(obj.border == false){
+          console.log("Adding border")
+          obj.border = true;
           objectsWithBorders[i] = obj;
           borderCount += 1;
+        }else{
+          //if it has been clicked, remove the border
+          obj.border = false;
         }
+      }
+    }else{
+      if(obj.border){
+        borderCount += 1;
+        objectsWithBorders[i] = obj
       }
     }
     //if control is not pressed and someone clicked clear all borders
-    else{
-      obj.border = false;
-    }
   }
   // if more than 1 object has a border create a muscle between the first two
   if(borderCount > 1){
@@ -465,16 +483,34 @@ function leftClickCanvas(event) {
     for(const key in objectsWithBorders){
       let obj = objectsWithBorders[key]
       obj.border = false;
-      objects.push([key, obj])
+      objects.push([Number(key), obj])
     }
     sim.createMuscle(objects[0][1], objects[1][1], objects[0][0], objects[1][0])
   }
 }
-function checkHoverEvent(event){
+function displayProperties(obj){
+    propView.style.left = (mouseHoverX + window.scrollX) + "px";
+    propView.style.top = (mouseHoverY + window.scrollY) + "px";
+    let objInfo = "";
+    let objInfoDict = obj.getObjectInfo();
+    let len = 0;
+    for(key in objInfoDict){
+      len += 1;
+      objInfo += `${key}: ${Math.round(objInfoDict[key] * 100)/100}\n`
+    }
 
-  if(!inspection){
-    return;
-  }
+
+    //0.75 accounts for line spacing changing it's size as the text
+    //gets bigger
+    let height = (PropertyViewFontSize * len) + (0.75 * len);
+    propView.style.height = height * scalingFactor;
+
+    propView.innerText = objInfo
+    
+
+    propView.classList.remove("hidden");
+}
+function checkHoverEvent(event){
 
   mouseHoverX = event.clientX;
   mouseHoverY = event.clientY;
@@ -484,27 +520,21 @@ function checkHoverEvent(event){
   for(let i = 0; i < sim.objects.length; i++){
 
     let obj = sim.objects[i];
+    if(obj === null){
+      continue;
+    }
     if(isWithinRect(graphX, graphY, obj)){
-      propView.style.left = (mouseHoverX + window.scrollX) + "px";
-      propView.style.top = (mouseHoverY + window.scrollY) + "px";
-      let objInfo = "";
-      let objInfoDict = obj.getObjectInfo();
-      let len = 0;
-      for(key in objInfoDict){
-        len += 1;
-        objInfo += `${key}: ${Math.round(objInfoDict[key] * 100)/100}\n`
+      if(inspection){
+        displayProperties(obj);
+      }else if(trash){
+
+      }else if(move){
+        
+      }else{
+
       }
 
-
-      //0.75 accounts for line spacing changing it's size as the text
-      //gets bigger
-      let height = (PropertyViewFontSize * len) + (0.75 * len);
-      propView.style.height = height * scalingFactor;
-
-      propView.innerText = objInfo
-      
-
-      propView.classList.remove("hidden");
+      //make sure if the element is found the loop doesn't continue
       break;
     }else{
       if(!propView.classList.contains("hidden")){
@@ -529,22 +559,34 @@ function canvasLeave(){
   canvas.removeEventListener('mousemove', checkHoverEvent)
   
 }
+function clearAllControlBools(){
+  inspection = false;
+  trash = false;
+  move = false;
+  configure = false;
+  canvas.style.cursor = ""; 
+}
 function inspectionClicked(event){
   checkboxClicked(event);
-  inspection = !inspection;
+  inspection = event.target.checked;
   canvas.style.cursor =  inspection? "help": ""; 
 }
 function deleteClicked(event){
   checkboxClicked(event);
+  trash = event.target.checked;
 }
 function moveClicked(event){
   checkboxClicked(event);
+  move = event.target.checked;
+  canvas.style.cursor = move? "grab": "";
 }
 function configureClicked(event){
   checkboxClicked(event);
+  configure = event.target.checked;;
 }
 
 function checkboxClicked(e){
+  clearAllControlBools();
   let targetId = e.target.id;
   let checkboxes = document.getElementsByClassName("controlCheckbox");
   for(let i = 0; i < checkboxes.length; i++){
@@ -557,24 +599,29 @@ function checkboxClicked(e){
 
 }
 function pauseButtonClicked(){
+  console.log(sim.connections + "");
   let btn = document.getElementById("pausePlay");
   let btnRect = btn.getBoundingClientRect();
   let height = btnRect.height;
   if(btn.classList.contains("pause")){
+    //css stuff
     btn.classList.remove("pause");
     btn.classList.add("play");
     btn.style.borderWidth = `${height/2}px 0px ${height/2}px ${height}px`;
+    //sim stuff
     isPaused = false;
-    
+    totalPausedTime += (performance.now() - pauseStartTime)/1000;
   }
   else{
-
+    //css stuff
     btn.classList.remove("play");
     btn.classList.add("pause");
     btn.style.borderWidth = `0px 0px 0px ${height/2}px`;
+    //sim stuff
     isPaused = true;    
+    pauseStartTime = performance.now();
   }
-  
+    
 }
 function setupInteractionEvents(){
   document.addEventListener("keydown", keyPressed);
@@ -583,10 +630,7 @@ function setupInteractionEvents(){
   canvas.addEventListener('mouseover', canvasEntered);
   canvas.addEventListener('mouseout', canvasLeave);
 
-  let inspectCheckbox = document.getElementById("inspect");
-
   let controlCheckboxes = document.getElementsByClassName("controlCheckbox");
-
   let checkboxFunctions = {
     "move": moveClicked,
     "trash": deleteClicked,
