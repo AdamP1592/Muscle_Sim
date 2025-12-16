@@ -288,21 +288,14 @@ function draw(currentTime){
 }
 
 function resizeCanvas(){
-
   let graphingFooter = document.getElementById("graphFooter");
-  let interactions = document.getElementById("interactions")
+  let interactions = document.getElementById("interactions");
+  let navbar = document.getElementById("navBar");
 
-  let interactionRect = interactions.getBoundingClientRect()
-
-  canvasRect = canvas.getBoundingClientRect();
-
-  canvas.width = canvasRect.width;
-  canvas.height = canvasRect.height;
-  
   let main = document.getElementById("main");
   let body = document.getElementsByTagName("body")[0];
   let pauseButton = document.getElementById("pausePlay");
-  //if canvas + min width interactions is > window width
+  //if canvas + interaction menu min width is > window width
   if(canvas.width + 100 > window.innerWidth){
     body.classList.add("noMargin");
     main.classList.add("justify-left");
@@ -311,13 +304,10 @@ function resizeCanvas(){
     main.classList.remove("justify-left")
     body.classList.remove("noMargin");
   }
-  canvasRect = canvas.getBoundingClientRect();
 
+  canvasRect = canvas.getBoundingClientRect();
   scalingFactor = canvasRect.width/maxX;
 
-  oldWidth = canvas.width;
-  oldHeight = canvas.height;
-  
   //rescale st
   propView.style.width = (PropertyViewWidth * scalingFactor);
   propView.style.height = (PropertyViewHeight * scalingFactor);
@@ -332,14 +322,16 @@ function resizeCanvas(){
     pauseButton.style.borderWidth = `0px 0px 0px ${height/2}px`
   }
 
-  canvasRect = canvas.getBoundingClientRect();
+  let interactionRect = interactions.getBoundingClientRect()
 
-  graphingFooter.style.width = interactionRect.width + canvasRect.width + "px";
-  graphingFooter.style.top = Math.max(0, canvasRect.top + canvasRect.height) + "px";
+
+  footerWidth = interactionRect.width + canvasRect.width
+  graphingFooter.style.width = footerWidth + "px";
+  //graphingFooter.style.top = Math.max(0, canvasRect.bottom) + "px";
   graphingFooter.style.height = 5.5 * scalingFactor;
+  navbar.style.paddingRight = `calc(max(${footerWidth}px, 100%) - 100%)`
   //let spawnButtons = document.getElementsByClassName("spawn_button");
   
-
 }
 /**
  * sets up the first demo visualization of the simulation(a cube following a circular motion)
@@ -368,8 +360,6 @@ function demo1(){
     sim.createMuscle(sim.objects.get(0), sim.objects.get(i), 0, i)
 
     let shift = ((i - 1) / numFixed) * (1/freq);
-
-
     sim.forceAddingElements.get(i - 1).muscle.setStimulation(shift, "sin", freq)
   }
   
@@ -377,8 +367,7 @@ function demo1(){
 
 //window events
   window.addEventListener("resize", () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => resizeCanvas(), 50);
+    requestAnimationFrame(resizeCanvas)
   });
 
 window.addEventListener("load", function() {
@@ -397,8 +386,18 @@ window.addEventListener("load", function() {
 
   create_onclick_events();
   lastFrameTime = performance.now();
-  window.dispatchEvent(new Event('resize'));
+
+  //call resize twice.
+  //first sets the initial state, and might apply a flexbox alignment
+  //second calls after t
+  canvasRect = canvas.getBoundingClientRect();
+  
+  canvas.width = canvasRect.width;
+  canvas.height = canvasRect.height;
+
   resizeCanvas();
+  this.window.dispatchEvent(new Event("resize"));
+
   startTime = performance.now()
   requestAnimationFrame(draw);
 });

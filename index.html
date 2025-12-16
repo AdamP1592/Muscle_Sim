@@ -3,7 +3,21 @@
         <link rel="stylesheet" href="./css/main.css">
         <meta charset="utf-8">
     </header>
-    <body autofocus>
+    <body>
+        <nav id = "navBar">
+            <div id = "icon"></div>
+            <ul id = "navButtons">
+                <li id = "home" >
+                    <button class = "navButton"> Home </button>    
+                </li>
+                <li id = "sim">
+                    <button class = "navButton selected"> Simulation </button>
+                </li>
+                <li id = "about">
+                    <button class = "navButton"> About </button>
+                </li>
+            </ul>
+        </nav>
         <div id="main">
             <canvas id="phys_sim"></canvas>
             <div id="interactions">
@@ -53,15 +67,15 @@
                             </tr>
                         </tbody>
                     </table>
-
-                    
                 </div>
             </div>
+
+        </div>
+        <div id="footerWrapper">
             <div id = "graphFooter">
                 <button id="pausePlay" class = "play"></button>
             </div>
         </div>
-
         <div id="contextMenu" class = "hidden absolutePos">
         </div>
         <div id="propertyView" class = "hidden absolutePos">
