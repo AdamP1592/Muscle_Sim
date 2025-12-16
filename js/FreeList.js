@@ -1,0 +1,90 @@
+
+class FreeList{
+    constructor(){
+        this.free = new Queue();
+        this.free.enqueue(0);
+        this.list = [];
+    }
+    get(index){
+        return this.list[index];
+    }
+    set(index, value){
+        this.list[index] = value;
+    }
+    /**
+     * Pushes some value to some open space within the FreeList.
+     * If there is no open space, pushes to the end
+     * @param {any} value 
+     * @returns {Number} indexPlaced
+     */
+    push(value){
+        let index = this.free.dequeue();
+        if(index === null){
+            this.list.push(value);
+            index = this.list.length;
+        }else{
+            this.list[index] = value;
+        }
+        return index;
+    }
+    /**
+     * Removes whatever is at the given index and adds that index to the queue of free indices
+     * @param {Number} index 
+     */
+    remove(index){
+        if(this.list[index] !== null){
+            this.free.enqueue(index);
+            this.list[index] = null;
+        }
+    }
+    /**
+     * Iterator that yields [index, itemAtIndex] so long as there is something at that index
+     */
+    *[Symbol.iterator](){
+        for(let i = 0; i < this.list.length; i++){
+            const item = this.list[i];
+            if(item !== null){
+                yield [i, item];
+            }
+        }
+    }
+
+}
+
+function freeListTest(){
+    let ls = new FreeList();
+    ls.push(12);
+    ls.push(15);
+    //test get
+    console.log(ls.get(0));
+    console.log(ls.get(1));
+
+    //test delete
+    ls.remove(0);
+    console.log(ls.list);
+
+    //test pushing to the freed position
+    ls.push(150);
+    console.log(ls.list);
+
+    //test pushing to the end after reallocating the freed position
+    ls.push(112);
+    console.log(ls.list);
+
+    ls.remove(0);
+    ls.remove(1);
+    console.log(ls.list);
+    ls.push(912);
+    ls.push(314);
+    ls.push(1252);
+    console.log(ls.list);
+
+    for(const [index, val] of ls){
+        console.log(index, val);
+    }
+    ls.remove(1);
+    for(const [index, val] of ls){
+        console.log(index, val);
+    }
+
+}
