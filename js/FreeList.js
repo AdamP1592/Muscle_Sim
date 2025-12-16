@@ -19,9 +19,12 @@ class FreeList{
      */
     push(value){
         let index = this.free.dequeue();
+        //if there are no free values push to the list
         if(index === null){
-            this.list.push(value);
+            //the index is the current length: since [0, 1, 2].length == 3, and you push 4, list[3] = 4
             index = this.list.length;
+            this.list.push(value);
+            
         }else{
             this.list[index] = value;
         }

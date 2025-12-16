@@ -1,11 +1,10 @@
 class PhysicsSim{
     constructor(){
-        //objects in this case are things that move
-        this.fixedObjects = []
-        this.moveableObjects = []
+        this.fixedObjects = new FreeList();
+        this.moveableObjects = new FreeList();
         //elements in this case are things that cause movement
-        this.forceAddingElements = [] 
-        this.objects = []
+        this.forceAddingElements = new FreeList();
+        this.objects = new FreeList()
         this.t = 0
         this.connections = new BiMap();
     }
@@ -20,7 +19,7 @@ class PhysicsSim{
         let height = 5;
         let rect = new Rect(width, height, x, y)
         this.fixedObjects.push(rect);
-        this.objects.push(rect)
+        this.objects.push(rect);
     }  
     /**
      * Creates a moveable square at the graphing coordinates
@@ -34,8 +33,7 @@ class PhysicsSim{
         //0.01 g
         let mass = 0.1;
         let rect = new MoveableRect(width, height, x, y, mass)
-        this.fixedObjects.push(rect)
-        this.objects.push(rect);
+        this.objects.push(rect)
     }
     /**
      * Creates a muscle attached to obj1 and obj2
@@ -51,19 +49,19 @@ class PhysicsSim{
     createMuscle(obj1, obj2, index1, index2){
 
         //prevent duplicates
-        for(let i = 0; i < this.forceAddingElements.length; i++){
-            let m = this.forceAddingElements[i];
+        for(let [index, muscle] of this.forceAddingElements){
             //index 1 and index 2 will always be in order of least to greatest
-            if(m.index1 == index1 && m.index2 == index2){
+            if(muscle.index1 == index1 && muscle.index2 == index2){
                 console.log("Duplicate muscle");
                 return false;
             }
-        }
-
-        this.connections.put(index1, this.forceAddingElements.length);
-        this.connections.put(index2, this.forceAddingElements.length);
+        }  
+        
         let newMuscle = new SkeletalMuscle(index1, index2, obj1.x, obj1.y, obj2.x, obj2.y);
-        this.forceAddingElements.push(newMuscle)
+        let newMuscleIndex = this.forceAddingElements.push(newMuscle);
+
+        this.connections.put(index1, newMuscleIndex);
+        this.connections.put(index2, newMuscleIndex);
 
         return true
     }
@@ -75,23 +73,19 @@ class PhysicsSim{
         this.t += dt
         //console.log("Step: ", this.t);
         // updates objects to new positions
-        for(let i = 0; i < this.objects.length; i++){
-            if(this.objects[i] === null){
-                continue;
-            }
-            this.objects[i].update(dt);
+        for(let [index, obj] of this.objects){
+            obj.update(dt);
         }
         //update all muscles and add forces to the objects the muscle is connected to
-        for(let i = 0; i < this.forceAddingElements.length; i++){
-            // console("ElementsLoop")
-            let element = this.forceAddingElements[i];
-            if(element === null){
-                continue;
-            }
-            // console(element)
+        for(let [index, element] of this.forceAddingElements){
 
-            let obj1 = this.objects[element.index1];
-            let obj2 = this.objects[element.index2];
+            
+            let obj1 = this.objects.get(element.index1);
+            let obj2 = this.objects.get(element.index2);
+            if(obj1 == null || obj2 == null){
+                console.log(obj1, obj2, element)
+            }
+            
             // updates all muscles to their new length
             element.updateLength(obj1.x, obj2.x, obj1.y, obj2.y);
 
@@ -102,5 +96,32 @@ class PhysicsSim{
             obj2.addForce(-forceX, -forceY);
             obj1.addForce(forceX, forceY);
         }
+    }
+    deleteObject(objectIndex){
+        //reove the object
+        this.objects.remove(objectIndex);
+
+        //get a set of all element indices the object is connected to
+        let connectedElements = this.connections.forwardGet(objectIndex);
+
+        //if there is nothing connected, nothing else is needed
+        if(connectedElements === null){
+            return
+        }
+
+        //remove all all elements the object was connected to
+        for(const elementIndex of connectedElements){
+            this.forceAddingElements.remove(elementIndex);
+        }
+
+        //remove the the objectIndex and all elementIndeces 
+        this.connections.removeForwards(objectIndex);
+
+    }
+    deleteElement(elementIndex){
+        //remove the element
+        this.forceAddingElements.remove(elementIndex);
+        //remove the the elementIndex and all objectIndices connected
+        this.connections.removeBackwards(elementIndex);
     }
 }

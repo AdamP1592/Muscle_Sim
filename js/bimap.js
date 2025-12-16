@@ -152,4 +152,3 @@ function testBidirectionalMap(){
     console.log(someMap + "")
 
 }
-testBidirectionalMap()
