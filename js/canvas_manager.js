@@ -14,6 +14,10 @@ var scalingFactor = null;
 var renderingScale = 1;
 var startTime = 0;
 
+//for client bounding rect
+var canvasRect = null;
+
+
 //Storage for maintaining the connection between dt and fps
 var lastFrameTime = null;
 
@@ -78,7 +82,7 @@ function convertClientCoordsToGraph(x, y, debug = false){
   }
   */
   const canvasX = x - Math.max(0, canvasRect.left);
-  const canvasY = y - Math.max(0, canvasRect.top);
+  const canvasY = canvasRect.width - (y - Math.max(0, canvasRect.top));
   const graphX = canvasX / scalingFactor;
   const graphY = canvasY / scalingFactor;
   if(debug){
@@ -104,7 +108,7 @@ function convertGraphCoordsToCanvas(x, y){
   //converts 0 - maxX/maxY coords to canvas coords
 
   let xCanvas = x * scalingFactor
-  let yCanvas = y * scalingFactor
+  let yCanvas = canvasRect.height - (y * scalingFactor)
   
   return [xCanvas, yCanvas]
 }
@@ -181,7 +185,7 @@ function drawMuscles(){
     ctx.beginPath();
     ctx.strokeStyle = '#c21212ff';
     ctx.lineWidth = 3
-    ctx.moveTo(obj1X + (canvasWidth1)/2, obj1Y + (canvasHeight1)/2);
+    ctx.moveTo(obj1X + (canvasWidth1)/2, (obj1Y + (canvasHeight1)/2));
     ctx.lineTo(obj2X + (canvasWidth2)/2, obj2Y + (canvasHeight2)/2);
 
     ctx.stroke();
@@ -211,13 +215,13 @@ function drawObjects(){
     }
     let fontSize =  String(5 * scalingFactor);
     ctx.font = fontSize + 'px bold arial'
-    ctx.fillText(index, xCanvas , yCanvas )
+    ctx.fillText(index, xCanvas, yCanvas)
     
   }
   ctx.fill();
   ctx.stroke();
 }
-function drawGrid(){
+function drawGrid(gridSpacing = 10){
   ctx.strokeStyle = '#a6a6a6';
   ctx.fillStyle = '#a6a6a6'
 
@@ -228,22 +232,22 @@ function drawGrid(){
   ctx.font = fontSize + 'px bold arial'
   ctx.lineWidth = 1;
 
-  let gridSpacing = 10;
+
   for(let i = 0; i < Math.round(maxX / gridSpacing); i++){
     ctx.beginPath();
     //move to some incriment of 10 in graph coords 
     let graphingCoord = i * gridSpacing;
     let canvasCoord = graphingCoord * scalingFactor;
-    let graphingCoordString = String(graphingCoord);
+    let graphingCoordString = " " + String(graphingCoord);
 
     //draw x lines
-    ctx.fillText(graphingCoordString, canvasCoord, 0);
+    ctx.fillText(graphingCoordString, canvasCoord, canvasRect.height - (4 * scalingFactor));
     ctx.moveTo(canvasCoord, 0);
     ctx.lineTo(canvasCoord, canvasRect.height);
     ctx.stroke();
     
     //draw y lines
-    ctx.fillText(graphingCoordString, 0, canvasCoord);
+    ctx.fillText(graphingCoordString, 0, (canvasRect.height - canvasCoord) - (4 * scalingFactor));
     ctx.moveTo(0, canvasCoord);
     ctx.lineTo(canvasRect.width, canvasCoord);
     ctx.stroke();
@@ -380,6 +384,8 @@ window.addEventListener("load", function() {
   propView = document.getElementById("propertyView");
 
   canvas = document.getElementById("phys_sim");
+  canvasRect = canvas.getBoundingClientRect();
+
   ctx = canvas.getContext("2d");
 
   setupInteractionEvents()
@@ -390,13 +396,11 @@ window.addEventListener("load", function() {
   //call resize twice.
   //first sets the initial state, and might apply a flexbox alignment
   //second calls after t
-  canvasRect = canvas.getBoundingClientRect();
-  
+
   canvas.width = canvasRect.width;
   canvas.height = canvasRect.height;
 
   resizeCanvas();
-  this.window.dispatchEvent(new Event("resize"));
 
   startTime = performance.now()
   requestAnimationFrame(draw);

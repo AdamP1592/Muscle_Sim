@@ -166,8 +166,6 @@ class SmoothMuscle extends Muscle{
         // console(this.muscle.b, this.muscle.length)
         //sets l_0 
         this.muscle.setRestingLength(this.muscle.length)
-        
-        
     }
     /**
      * Takes in the two objects the muscle connects to

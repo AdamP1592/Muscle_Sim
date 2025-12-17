@@ -1,10 +1,10 @@
 class PhysicsSim{
+    #objects
+    #forceAddingElements
     constructor(){
-        this.fixedObjects = new FreeList();
-        this.moveableObjects = new FreeList();
         //elements in this case are things that cause movement
-        this.forceAddingElements = new FreeList();
-        this.objects = new FreeList()
+        this.#forceAddingElements = new FreeList();
+        this.#objects = new FreeList()
         this.t = 0
         this.connections = new BiMap();
     }
@@ -14,12 +14,18 @@ class PhysicsSim{
      * @param {int} x 
      * @param {int} y 
      */
+
+    get objects(){
+        return Object.freeze(this.#objects);
+    }
+    get forceAddingElements(){
+        return Object.freeze(this.#forceAddingElements);
+    }
     createFixedSquare(x, y){
         let width = 5;
         let height = 5;
         let rect = new Rect(width, height, x, y)
-        this.fixedObjects.push(rect);
-        this.objects.push(rect);
+        this.#objects.push(rect);
     }  
     /**
      * Creates a moveable square at the graphing coordinates
@@ -33,7 +39,7 @@ class PhysicsSim{
         //0.01 g
         let mass = 0.1;
         let rect = new MoveableRect(width, height, x, y, mass)
-        this.objects.push(rect)
+        this.#objects.push(rect)
     }
     /**
      * Creates a muscle attached to obj1 and obj2
@@ -49,7 +55,7 @@ class PhysicsSim{
     createMuscle(obj1, obj2, index1, index2){
 
         //prevent duplicates
-        for(let [index, muscle] of this.forceAddingElements){
+        for(let [index, muscle] of this.#forceAddingElements){
             //index 1 and index 2 will always be in order of least to greatest
             if(muscle.index1 == index1 && muscle.index2 == index2){
                 console.log("Duplicate muscle");
@@ -58,7 +64,7 @@ class PhysicsSim{
         }  
         
         let newMuscle = new SkeletalMuscle(index1, index2, obj1.x, obj1.y, obj2.x, obj2.y);
-        let newMuscleIndex = this.forceAddingElements.push(newMuscle);
+        let newMuscleIndex = this.#forceAddingElements.push(newMuscle);
 
         this.connections.put(index1, newMuscleIndex);
         this.connections.put(index2, newMuscleIndex);
@@ -73,15 +79,14 @@ class PhysicsSim{
         this.t += dt
         //console.log("Step: ", this.t);
         // updates objects to new positions
-        for(let [index, obj] of this.objects){
+        for(let [index, obj] of this.#objects){
             obj.update(dt);
         }
         //update all muscles and add forces to the objects the muscle is connected to
-        for(let [index, element] of this.forceAddingElements){
-
+        for(let [index, element] of this.#forceAddingElements){
             
-            let obj1 = this.objects.get(element.index1);
-            let obj2 = this.objects.get(element.index2);
+            let obj1 = this.#objects.get(element.index1);
+            let obj2 = this.#objects.get(element.index2);
             if(obj1 == null || obj2 == null){
                 console.log(obj1, obj2, element)
             }
@@ -99,7 +104,7 @@ class PhysicsSim{
     }
     deleteObject(objectIndex){
         //reove the object
-        this.objects.remove(objectIndex);
+        this.#objects.remove(objectIndex);
 
         //get a set of all element indices the object is connected to
         let connectedElements = this.connections.forwardGet(objectIndex);
@@ -111,7 +116,7 @@ class PhysicsSim{
 
         //remove all all elements the object was connected to
         for(const elementIndex of connectedElements){
-            this.forceAddingElements.remove(elementIndex);
+            this.#forceAddingElements.remove(elementIndex);
         }
 
         //remove the the objectIndex and all elementIndeces 
@@ -120,7 +125,7 @@ class PhysicsSim{
     }
     deleteElement(elementIndex){
         //remove the element
-        this.forceAddingElements.remove(elementIndex);
+        this.#forceAddingElements.remove(elementIndex);
         //remove the the elementIndex and all objectIndices connected
         this.connections.removeBackwards(elementIndex);
     }

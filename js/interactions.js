@@ -19,9 +19,6 @@ var pauseStartTime = 0;
 var mouseHoverX = 0;
 var mouseHoverY = 0;
 
-//for client bounding rect
-var canvasRect = null;
-
 //for property view
 var propView = null;
 
