@@ -2,7 +2,6 @@
 class FreeList{
     constructor(){
         this.free = new Queue();
-        this.free.enqueue(0);
         this.list = [];
     }
     get(index){

@@ -36,7 +36,7 @@ class BiMap{
         return this.#forwards.get(a);
     }
     
-    backwardsGet(b){
+    backwardGet(b){
         return this.#backwards.get(b);
     }
 

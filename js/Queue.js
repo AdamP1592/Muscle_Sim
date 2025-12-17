@@ -35,7 +35,7 @@ class Queue{
     }
 }
 class QueueNode{
-    constructor(value, next=null, previous=null){
+    constructor(value, next=null){
         this.value = value;
         this.next = next;
     }
