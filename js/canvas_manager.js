@@ -221,36 +221,43 @@ function drawObjects(){
   ctx.fill();
   ctx.stroke();
 }
-function drawGrid(gridSpacing = 10){
-  ctx.strokeStyle = '#a6a6a6';
-  ctx.fillStyle = '#a6a6a6'
 
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
+// default is for the main graph but optional for the grid
+function drawGrid(canvasCtx = ctx, canvasBoundingRect = canvasRect, rawFontSize = 4, gridSpacing = 10,  xMin = 0, thisCanvasMaxX = maxX){
+  canvasCtx.strokeStyle = '#a6a6a6';
+  canvasCtx.fillStyle = '#a6a6a6'
 
-  let fontSize =  String(4 * scalingFactor);
-  ctx.font = fontSize + 'px bold arial'
-  ctx.lineWidth = 1;
+  canvasCtx.textAlign = "left";
+  canvasCtx.textBaseline = "bottom";
 
+  let fontSize =  String(rawFontSize * scalingFactor);
+  canvasCtx.font = fontSize + 'px bold arial'
+  canvasCtx.lineWidth = 1;
 
-  for(let i = 0; i < Math.round(maxX / gridSpacing); i++){
-    ctx.beginPath();
+  for(let i = (xMin/gridSpacing) ; i < Math.round((thisCanvasMaxX + xMin) / gridSpacing); i++){
+    canvasCtx.beginPath();
     //move to some incriment of 10 in graph coords 
-    let graphingCoord = i * gridSpacing;
-    let canvasCoord = graphingCoord * scalingFactor;
-    let graphingCoordString = " " + String(graphingCoord);
+    let graphingCoord = (i - (xMin/gridSpacing)) * gridSpacing;
+
+    //scales scaling factor to fit whatever xMax is since 150 is the default
+    let canvasCoord = graphingCoord * (scalingFactor * (maxX/thisCanvasMaxX));
+
+    let graphingCoordString = String(i * gridSpacing);
+
+    //so the numbers arent exactly on the lines
+    let coordDisplacement = 3;
 
     //draw x lines
-    ctx.fillText(graphingCoordString, canvasCoord, canvasRect.height - (4 * scalingFactor));
-    ctx.moveTo(canvasCoord, 0);
-    ctx.lineTo(canvasCoord, canvasRect.height);
-    ctx.stroke();
+    canvasCtx.fillText(graphingCoordString, canvasCoord + coordDisplacement, canvasBoundingRect.height);
+    canvasCtx.moveTo(canvasCoord, 0);
+    canvasCtx.lineTo(canvasCoord, canvasBoundingRect.height);
+    canvasCtx.stroke();
     
     //draw y lines
-    ctx.fillText(graphingCoordString, 0, (canvasRect.height - canvasCoord) - (4 * scalingFactor));
-    ctx.moveTo(0, canvasCoord);
-    ctx.lineTo(canvasRect.width, canvasCoord);
-    ctx.stroke();
+    canvasCtx.fillText(graphingCoordString, coordDisplacement, canvasBoundingRect.height - canvasCoord);
+    canvasCtx.moveTo(0, canvasCoord);
+    canvasCtx.lineTo(canvasRect.width, canvasCoord);
+    canvasCtx.stroke();
   }
   
 }
