@@ -113,7 +113,37 @@
 *BiMap.remove(a, b)*
 - Removes the connection b from the set a points to in the forwards map. Removes the connection a from the set b points to in the backwards set. Cleans up any key that points to an empty set
 
+## ScrollingMap
 
+**Description:**  
+>A map that is limited to some maxSize. When you push to a map that is already at it's max size it removes the first key. All operation besides iterating are o(1)
+
+**Variables:** 
+
+- maxSize
+    * Type: Number
+    * The maximum number of entries the map can contain
+
+- #scrollingMap
+    * Type: Map
+    * A private member of the class containing the actual Map that stores everything
+
+**Functions:** 
+
+*ScrollingMap.push(key, value)*
+- This is the core function of the ScrollingMap. When you push a key->value pair to the map and it's below maxSize, it's a normal set() function of a map. However, when the number of entries is equal to the maximum allowed number of entries, the map deletes the first key placed in the map.
+
+*ScrollingMap.replace(key, value)*
+- Replaces the value of a given key so long as the key exists
+
+*ScrollingMap.delete(key)*
+- Passes on the delete function of the scrollingMap
+
+*ScrollingMap.get(key)*
+- Passes on the get function of the scrollingMap
+
+*ScrollingMap.[Symbol.iterator()]*
+- Passes on the iterator of the scrollingMap
 
 
 <!-- 
