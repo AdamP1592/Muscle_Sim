@@ -315,8 +315,11 @@ function resizeCanvas(){
     main.classList.remove("justify-left")
     body.classList.remove("noMargin");
   }
-
   canvasRect = canvas.getBoundingClientRect();
+  
+  canvas.width = canvasRect.width;
+  canvas.height = canvasRect.height;
+
   scalingFactor = canvasRect.width/maxX;
 
   //rescale st
