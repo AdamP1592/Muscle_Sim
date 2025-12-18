@@ -108,9 +108,6 @@ class BiMap{
         //deletes the backwards set
         this.#backwards.delete(backwardsValue)
     }
-    get value(){
-        return this.toString();
-    }
     toString(){
         let bimapString = `Forwards: `;
         let forwardKeys = this.#forwards.keys()

@@ -1,4 +1,11 @@
 
+
+/*
+    Future concept. Instead of a true list for the free list make it a fully indexable linked list.
+    This will reduce the cost of iterating over a free list with many removals, but costs more ram.
+
+
+*/
 class FreeList{
     constructor(){
         this.free = new Queue();
@@ -17,6 +24,9 @@ class FreeList{
      * @returns {Number} indexPlaced
      */
     push(value){
+        //throw an error if you try to push a null value because the iterator will ignore it.
+        if(value === null) throw new Error("Incompatible Typing: null value cannot be placed in a FreeList");
+
         let index = this.free.dequeue();
         //if there are no free values push to the list
         if(index === null){
@@ -34,10 +44,11 @@ class FreeList{
      * @param {Number} index 
      */
     remove(index){
-        if(this.list[index] !== null){
-            this.free.enqueue(index);
-            this.list[index] = null;
-        }
+        if(this.list.length <= index) return;
+        if(this.list[index] === null) return;
+
+        this.free.enqueue(index);
+        this.list[index] = null;
     }
     /**
      * Iterator that yields [index, itemAtIndex] so long as there is something at that index

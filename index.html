@@ -82,25 +82,33 @@
         </div>
     </body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.0.0/math.js"></script>
+    
     <!-- 
     For servers:
     <script type = "module" src = "./js/import_math.js"></script> 
     -->
 
-    <script src = "./js/Queue.js"></script>
-    <script src = "./js/bimap.js"></script>
-    <script src = "./js/FreeList.js"></script>
+    <!-- Data Structures Layer -->
+        <script src = "./js/Queue.js"></script>
+        <script src = "./js/bimap.js"></script>
+        <script src = "./js/FreeList.js"></script>
+        <script src = "./js/ScrollingMap.js"></script>
 
-
-    <script src="./js/physics_obj.js"></script>
+    <!-- Domain Specific Layer -->
     
-    <script src = "./js/activation.js"></script>
-    <script src = "./js/fiber.js"></script>
-    
-    <script src = "./js/entities.js"></script>
-    <script src = "./js/phys_sim.js"></script>
+        <!-- Muscle -->
+        <script src = "./js/activation.js"></script>
+        <script src = "./js/fiber.js"></script>
+        
+        <!-- Entities -->
+        <script src="./js/physics_obj.js"></script>
+        <script src = "./js/entities.js"></script>
 
-    <script src= "./js/interactions.js"></script>
-    <script src="./js/canvas_manager.js"></script>
+    <!-- Coordination Layer -->
+        <script src = "./js/phys_sim.js"></script>
+
+    <!-- Interface Layer -->
+        <script src= "./js/interactions.js"></script>
+        <script src="./js/canvas_manager.js"></script>
 
 </html>

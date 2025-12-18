@@ -1,4 +1,8 @@
 // JS is stupid and is single inheritance so this is the best I could come up with
+
+//interval is every 200 time steps(at dt = 0.0001, data is collected every 0.02 seconds)
+const SAMPLING_INTERVAL = 200;
+
 function copyPrototypeMethods(target, source, rebind = false) {
     const proto = Object.getPrototypeOf(source);
     for (const name of Object.getOwnPropertyNames(proto)) {
@@ -113,6 +117,12 @@ class Muscle{
         this.index1 = index1;
         this.index2 = index2;
         this.muscle = null;
+
+        const NumberOfDatapoints = 500;
+        // 500 data points
+        this.forceData = new ScrollingMap(NumberOfDatapoints);
+        this.activationData = new ScrollingMap(NumberOfDatapoints);
+        this.lengthData = new ScrollingMap(NumberOfDatapoints);
     }
     /**
      * A general helper function to compute euclidean distance given two points
@@ -160,6 +170,7 @@ class SmoothMuscle extends Muscle{
         super(index1, index2)
 
         this.muscle = new SmoothMuscle();
+        
         
         //sets l_m
         this.updateLength(obj1X, obj2X, obj1Y, obj2Y);
@@ -232,6 +243,8 @@ class SkeletalMuscle extends Muscle{
      * @returns {array} component forces
      */
     update(obj1, obj2, dt, t){
+        let epsilon = dt * 1e-9
+        let currentStepCount = Math.round((t + epsilon) / dt);
 
         // console("T in phys sim:" + t)
         this.muscle.updateActivation(t);
@@ -252,6 +265,13 @@ class SkeletalMuscle extends Muscle{
         let forceX = ux * force;
         let forceY = uy * force;
         // console(`Active: ${this.muscle.activation} \nLength: ${this.muscle.x}\nForce:\n x: ${forceX}, y: ${forceY}\n ux: ${ux}, uy: ${uy}\n dx: ${dx}, dy: ${dy}`)
+        
+        if(currentStepCount % SAMPLING_INTERVAL === 0){
+            this.forceData.push(t, force);
+            this.activationData.push(t, this.muscle.activation);
+            this.lengthData.push(t, length)
+        }
+
 
         //return to the sim to apply force to the objects
         return [forceX, forceY]
