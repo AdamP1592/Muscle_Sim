@@ -6,7 +6,7 @@ class ScrollingMap{
      */
     constructor(maxSize){
         this.#scrollingMap = new Map();
-        this.maxSize = maxSize
+        this.maxSize = maxSize;
     }
     /**
      * Core function. Limits the size of the map to maxSize while allowing you
@@ -49,8 +49,6 @@ class ScrollingMap{
         }
         return false;
     }
-
-
 
     /**
      * Getter that only returns the readonly functions of the map

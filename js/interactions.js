@@ -23,6 +23,49 @@ var mouseHoverY = 0;
 var propView = null;
 
 
+/**
+ * if a click is released, place the object that corresponds with the button that was pressed
+ * @param {*} event 
+ */
+function click_released(event){
+  let x = event.clientX;
+  let y = event.clientY;
+
+  let [graphX, graphY] = convertClientCoordsToGraph(x, y)
+  //in bounds
+  if(!( graphX < 0 || graphX < 0 || graphX > maxX || graphX > maxY)){
+
+    switch(buttonID){
+      case "fixed_spawn":
+        sim.createFixedSquare(graphX, graphY)
+        break;
+      case "move_spawn":
+        sim.createMoveableSquare(graphX, graphY)
+        break;
+    }
+  }
+  else{
+    console.log("Out of bounds")
+  }
+  //reset event listeners and classes
+  let main = document.getElementById("main")
+  main.classList.remove('hover_with_obj');
+  document.removeEventListener('mouseup', click_released)
+} 
+/**
+ * A click event function for buttons 
+ * @param {*} event 
+ */
+function onclick_event(event){
+  button = event.srcElement
+  buttonID = event.srcElement.id
+  document.addEventListener('mouseup', click_released);
+
+  let main = document.getElementById("main");
+  main.classList.add('hover_with_obj');
+  
+}
+
 function keyPressed(event){
   if(event.key === "Control"){
     controlPressed = true;
