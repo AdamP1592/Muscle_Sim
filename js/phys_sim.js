@@ -129,4 +129,13 @@ class PhysicsSim{
         //remove the the elementIndex and all objectIndices connected
         this.connections.removeBackwards(elementIndex);
     }
+    updateElementBorder(index){
+        let element = this.#forceAddingElements.get(index);
+        element.border = !element.border;
+    }
+    clearElementBorders(){
+        for(let [index, element] of this.#forceAddingElements){
+            element.border = false;
+        }
+    }
 }

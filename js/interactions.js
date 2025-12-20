@@ -138,27 +138,70 @@ function leftClickCanvas(event) {
     sim.createMuscle(objects[0][1], objects[1][1], objects[0][0], objects[1][0])
   }
 }
-function displayProperties(obj){
-    propView.style.left = (mouseHoverX + window.scrollX) + "px";
-    propView.style.top = (mouseHoverY + window.scrollY) + "px";
-    let objInfo = "";
-    let objInfoDict = obj.getObjectInfo();
-    let len = 0;
-    for(key in objInfoDict){
-      len += 1;
-      objInfo += `${key}: ${Math.round(objInfoDict[key] * 100)/100}\n`
-    }
+function viewMuscleProperties(event){
+  let muscleButton = event.target;
+  let muscleKey = Number(event.target.value);
+  sim.clearElementBorders();
+  sim.updateElementBorder(muscleKey);
+
+  // generate fill 
+
+}
+
+function displayProperties(index, obj){
+  propView.style.left = (mouseHoverX + window.scrollX) + "px";
+  propView.style.top = (mouseHoverY + window.scrollY) + "px";
+  let objInfo = "";
+  let objInfoDict = obj.getObjectInfo();
+  let len = 0;
+  for(key in objInfoDict){
+    len += 1;
+    objInfo += `${key}: ${Math.round(objInfoDict[key] * 100)/100}\n`
+  }
+
+  //generate radio buttons for each connected muscle;
+
+  let muscleIndicesSet = sim.connections.forwardGet(index);
+
+  let modifier = ((muscleIndicesSet.size > 3) + 3);
+  //0.75 accounts for line spacing changing it's size as the text gets bigger
+  let height = (PropertyViewFontSize * len) + (PropertyViewFontSize * (muscleIndicesSet.size + 2.5) / modifier) + (0.75 * (muscleIndicesSet.size + len));
+  propView.style.height = height * scalingFactor;
+  //set the innertext to the given properties
+  propView.innerText = objInfo
+  propView.padding = "5px";
+  for(let key of muscleIndicesSet){
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'muscleRadioButton';
+    input.value = key;
+    input.id = `muscle${key}Selector`;
+    input.classList += 'muscleGraphSelector';
+
+    const label = document.createElement('label');
+    label.classList += 'muscleRadioButtonLabel';
+    label.appendChild(input);
+
+    const labelText = document.createElement('span');
+    labelText.classList += "muscleLabelText";
+    labelText.innerText = `m${key}`;
+    label.appendChild(labelText);
+  
+
+    label.addEventListener('change', viewMuscleProperties);
+
+    propView.appendChild(label);
+    
+  }
+
+  //display the properties
+  propView.classList.remove("hidden");
+}
+
+function moveObject(object, cursorX, cursorY){
+  let [graphX, graphY] = convertClientCoordsToGraph(cursorX, cursorY);
 
 
-    //0.75 accounts for line spacing changing it's size as the text
-    //gets bigger
-    let height = (PropertyViewFontSize * len) + (0.75 * len);
-    propView.style.height = height * scalingFactor;
-
-    //set the innertext to the given properties
-    propView.innerText = objInfo
-    //display the properties
-    propView.classList.remove("hidden");
 }
 function checkHoverEvent(event){
 
@@ -167,18 +210,26 @@ function checkHoverEvent(event){
   
   let [graphX, graphY] = convertClientCoordsToGraph(mouseHoverX, mouseHoverY)
 
+  let assignMoveOnClick = false;
+
   let withinRect = false;
   for(let [index, obj] of sim.objects){
 
     if(isWithinRect(graphX, graphY, obj)){
       withinRect = true;
       if(inspection){
-        displayProperties(obj);
+        displayProperties(index, obj);
       }else if(trash){
 
       }else if(move){
-        if(sim.connections.forwardGet(index) !== null){
+        if(sim.connections.forwardGet(index) !== undefined){
+          
           canvas.style.cursor = "not-allowed";
+        }else{
+          assignMoveOnClick = true;
+
+          canvas.style.cursor = "grabbing";
+          //some function that allows a person to click the rect, which attaches the rect to the cursor
         }
       }else{
 
@@ -291,7 +342,6 @@ function setupInteractionEvents(){
   }
   for(let i = 0; i < controlCheckboxes.length; i++){
     let checkbox = controlCheckboxes[i];
-    
     checkbox.addEventListener("change", checkboxFunctions[checkbox.id])
   }
 

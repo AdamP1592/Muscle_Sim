@@ -229,6 +229,8 @@ class SkeletalMuscle extends Muscle{
         this.force = 0;
         this.muscle = new SkeletalFiber(this.getLength(x1, x2, y1, y2), params);
         this.t = 0;
+        this.borderColor = "white";
+        this.border = false;
 
         //ensures no default stimulation
         this.muscle.setStimulation(0, "none");

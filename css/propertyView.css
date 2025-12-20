@@ -1,0 +1,21 @@
+.muscleGraphSelector{
+    appearance:none;
+    position:absolute;
+    opacity:0;
+}
+.muscleRadioButtonLabel{
+    background-color: #c21212ff;
+    display:inline-flex;
+    align-items:center;
+    cursor:pointer;
+    margin: 2px;
+    border-radius: 20%;
+}
+.muscleLabelText{
+    padding: 1px 5px;
+}
+.muscleRadioButtonLabel .muscleGraphSelector:checked + .muscleLabelText {
+  background: rgb(255, 56, 56);
+  border-radius:20%;
+}
+

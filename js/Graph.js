@@ -83,11 +83,13 @@ function isWithinRect(x, y, rect, positioning="centered"){
 }
 /**
  * 
- * @param {*} x 
- * @param {*} y 
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {DOMRectReadOnly} rect
+ * @param {Boolean} debug
  * @returns 
  */
-function convertClientCoordsToGraph(x, y, debug = false){
+function convertClientCoordsToGraph(x, y, rect = canvasRect, debug = false){
 
   x += window.scrollX;
   y += window.scrollY;
@@ -104,7 +106,7 @@ function convertClientCoordsToGraph(x, y, debug = false){
   }
   */
   const canvasX = x - Math.max(0, canvasRect.left);
-  const canvasY = canvasRect.width - (y - Math.max(0, canvasRect.top));
+  const canvasY = rect.width - (y - Math.max(0, rect.top));
   const graphX = canvasX / scalingFactor;
   const graphY = canvasY / scalingFactor;
   if(debug){
@@ -113,9 +115,9 @@ function convertClientCoordsToGraph(x, y, debug = false){
     ScrollX: ${window.scrollX}, ScrollY:${window.scrollY}
     CanvasX: ${canvasX}, CanvasY:${canvasY}
     GraphX: ${graphX}, GraphY: ${graphY}
-    RectLeft: ${canvasRect.left}, RectTop:${canvasRect.top}
+    RectLeft: ${rect.left}, RectTop:${rect.top}
     `);
-    console.log(canvasRect)
+    console.log(rect)
   }
 
   return [graphX, graphY]
@@ -149,6 +151,7 @@ function create_onclick_events(){
         buttons[i].addEventListener("mousedown", onclick_event)
     }
 }
+
 /**
  * 
  * @param {CanvasRenderingContext2D} ctx 

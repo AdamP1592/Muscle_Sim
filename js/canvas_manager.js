@@ -34,10 +34,10 @@ function drawMuscles(){
     let [obj1X, obj1Y] = convertGraphCoordsToCanvas(obj1.x, obj1.y);
     let [obj2X, obj2Y] = convertGraphCoordsToCanvas(obj2.x, obj2.y);
 
-    let canvasWidth1 = obj1.width * scalingFactor
-    let canvasHeight1 = obj1.height * scalingFactor
-    let canvasWidth2 = obj2.width * scalingFactor
-    let canvasHeight2 = obj2.height * scalingFactor
+    const canvasWidth1 = obj1.width * scalingFactor
+    const canvasHeight1 = obj1.height * scalingFactor
+    const canvasWidth2 = obj2.width * scalingFactor
+    const canvasHeight2 = obj2.height * scalingFactor
 
     obj1X -= canvasWidth1/2;
     obj1Y -= canvasHeight1/2;
@@ -45,11 +45,26 @@ function drawMuscles(){
     obj2X -= canvasWidth2/2;
     obj2Y -= canvasHeight2/2;
 
+    const startX = obj1X + (canvasWidth1)/2;
+    const endX = obj2X + (canvasWidth2)/2;
+
+    const startY = obj1Y + (canvasHeight1)/2;
+    const endY =  obj2Y + (canvasHeight2)/2;
+
+    if(element.border === true){
+      ctx.beginPath();
+      ctx.strokeStyle = element.borderColor;
+      ctx.lineWidth = 8;
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+    }
+
     ctx.beginPath();
     ctx.strokeStyle = '#c21212ff';
     ctx.lineWidth = 3
-    ctx.moveTo(obj1X + (canvasWidth1)/2, (obj1Y + (canvasHeight1)/2));
-    ctx.lineTo(obj2X + (canvasWidth2)/2, obj2Y + (canvasHeight2)/2);
+    ctx.moveTo(startX, startY );
+    ctx.lineTo(endX, endY);
 
     ctx.stroke();
 
