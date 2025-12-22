@@ -103,7 +103,7 @@ function drawObjects(){
 // default is for the main graph but optional for the grid
 function draw(currentTime){
   const fps = 60
-  const dt = 0.0001
+  const dt = 0.0005
   let elapsedTime = currentTime - lastFrameTime;
   //dt is 1ms, there are 30 fps, elapsed time is 
   if(!isPaused){
@@ -217,6 +217,55 @@ function demo1(){
     sim.forceAddingElements.get(i - 1).muscle.setStimulation(shift, "sin", freq)
   }
   
+}
+function stressTest(){
+
+  let count = 300;
+
+
+  //identify spacing for some count
+  let area = maxY * maxY;
+  let areaPerNode = area/count;
+
+  let spacing = Math.sqrt(areaPerNode);
+
+  let cols = Math.floor(maxX/spacing);
+  let rows = Math.floor(maxY/spacing);
+
+  let rowsSelector = false;
+
+  while(rows * cols < count){
+    if(rowsSelector){
+      rows += 1
+    }else{
+      cols += 1
+    }
+    rowsSelector = !rowsSelector;
+  }
+
+  const dx = maxX / cols;
+  const dy = maxY / rows;
+
+  let n = 0;
+  let muscleCount = 0;
+
+  for(let i = 0; i < cols; i++){
+    for(let j = 0; j < rows; j++){
+      const x = i * dx;
+      const y = j * dy;
+
+      sim.createMoveableSquare(x, y);
+      
+      if(n >= 1){
+
+        const simObjects = sim.objects;
+        sim.createMuscle(simObjects.get(n-1), simObjects.get(n), n - 1, n);
+        sim.setStimulation(muscleCount, 'sin', 1, offset=0)
+        muscleCount++;
+      }
+      n += 1
+    }
+  }
 }
 
 //window events

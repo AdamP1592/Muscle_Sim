@@ -22,8 +22,8 @@ class PhysicsSim{
         return Object.freeze(this.#forceAddingElements);
     }
     createFixedSquare(x, y){
-        let width = 5;
-        let height = 5;
+        let width = 6;
+        let height = 6;
         let rect = new Rect(width, height, x, y)
         this.#objects.push(rect);
     }  
@@ -34,8 +34,8 @@ class PhysicsSim{
      * @param {int} y 
      */
     createMoveableSquare(x, y){
-        let width = 10;
-        let height = 10;
+        let width = 8;
+        let height = 8;
         //0.01 g
         let mass = 0.1;
         let rect = new MoveableRect(width, height, x, y, mass)
@@ -137,5 +137,10 @@ class PhysicsSim{
         for(let [index, element] of this.#forceAddingElements){
             element.border = false;
         }
+    }
+
+    setStimulation(elementIndex, type, freq, offset=0){
+        console.log(elementIndex)
+        this.#forceAddingElements.get(elementIndex).muscle.setStimulation(offset, type, freq);
     }
 }

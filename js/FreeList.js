@@ -11,6 +11,9 @@ class FreeList{
         this.free = new Queue();
         this.list = [];
     }
+    get size() {
+        return this.list.length - this.free.size;
+    }
     get(index){
         return this.list[index];
     }
@@ -24,6 +27,7 @@ class FreeList{
      * @returns {Number} indexPlaced
      */
     push(value){
+
         //throw an error if you try to push a null value because the iterator will ignore it.
         if(value === null) throw new Error("Incompatible Typing: null value cannot be placed in a FreeList");
 
@@ -37,6 +41,7 @@ class FreeList{
         }else{
             this.list[index] = value;
         }
+        
         return index;
     }
     /**

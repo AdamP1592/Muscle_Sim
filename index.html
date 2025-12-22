@@ -2,6 +2,8 @@
     <header>
         <link rel="stylesheet" href="./css/main.css">
         <link rel="stylesheet" href="./css/propertyView.css">
+        <link rel="stylesheet" href="./css/muscleGraphs.css">
+        <link rel="stylesheet" href="./css/navbar.css">
         <meta charset="utf-8">
     </header>
     <body>
@@ -77,8 +79,13 @@
                 <button id="pausePlay" class = "play"></button>
             </div>
         </div>
-        <div id="muscleGraphWrapper" class = "hidden absolutePos">
-            <canvas id = "muscleGraph"></canvas>
+        <div id = "muscleGraphParamView" class = "hidden absolutePos">
+            <div id = "muscleGraphWrapperHeader">Header</div>
+            <div id="muscleGraphWrapper">
+                <canvas id = "muscleForceGraph" class = "muscleGraph"></canvas>
+                <canvas id = "muscleLengthGraph" class = "muscleGraph"></canvas>
+                <canvas id = "muscleActivationGraph" class = "muscleGraph"></canvas>
+            </div>
         </div>
         <div id="propertyView" class = "hidden absolutePos">
         </div>

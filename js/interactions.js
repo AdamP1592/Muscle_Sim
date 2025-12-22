@@ -22,6 +22,7 @@ var mouseHoverY = 0;
 //for property view
 var propView = null;
 
+var focusedElementIndex = null;
 
 /**
  * if a click is released, place the object that corresponds with the button that was pressed
@@ -141,6 +142,9 @@ function leftClickCanvas(event) {
 function viewMuscleProperties(event){
   let muscleButton = event.target;
   let muscleKey = Number(event.target.value);
+
+  focusedElementIndex = muscleKey;
+
   sim.clearElementBorders();
   sim.updateElementBorder(muscleKey);
 
@@ -165,12 +169,13 @@ function displayProperties(index, obj){
 
   let modifier = ((muscleIndicesSet.size > 3) + 3);
   //0.75 accounts for line spacing changing it's size as the text gets bigger
-  let height = (PropertyViewFontSize * len) + (PropertyViewFontSize * (muscleIndicesSet.size + 2.5) / modifier) + (0.75 * (muscleIndicesSet.size + len));
+  let height = (PropertyViewFontSize * len) + (PropertyViewFontSize * (muscleIndicesSet.size + 2) / modifier) + (0.75 *  len) + (1.0 * muscleIndicesSet.size);
   propView.style.height = height * scalingFactor;
   //set the innertext to the given properties
   propView.innerText = objInfo
   propView.padding = "5px";
   for(let key of muscleIndicesSet){
+
     const input = document.createElement('input');
     input.type = 'radio';
     input.name = 'muscleRadioButton';
@@ -186,8 +191,10 @@ function displayProperties(index, obj){
     labelText.classList += "muscleLabelText";
     labelText.innerText = `m${key}`;
     label.appendChild(labelText);
-  
-
+    
+    if(key === focusedElementIndex){
+      input.checked = true;
+    }
     label.addEventListener('change', viewMuscleProperties);
 
     propView.appendChild(label);

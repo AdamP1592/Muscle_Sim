@@ -177,7 +177,8 @@ ul{
     border-color: transparent transparent transparent rgb(0, 0, 0);
 }
 #footerWrapper{
-    height: 1.25%;
+    /* height gets overwritten by js, just set it to 0 so the element renders hidden on pageload*/
+    height: 0;
     display:inline-flex;
     justify-content: center;
     min-width:100%;
@@ -187,39 +188,4 @@ ul{
     height: 1.25%;
     top:100%;
     background-color: rgb(47, 199, 85);
-}
-
-#navBar{
-    height:5%;
-    width:100%;
-    background-color: rgb(60, 140, 150);
-}
-#navButtons{
-    display:flex;
-    justify-content:flex-end;
-    align-items: center;
-
-    position:absolute;
-    right:0;
-
-    width: 30%;
-    height: 5%;
-    margin-right:20px;
-}
-.navButton{
-    border:none;
-    background-color: rgb(60, 140, 150);
-    height:100%;
-    width: 100%;
-    padding-left: 1.5em;
-    padding-right: 1.5em;
-    max-width: 100px;
-}
-.navButton:hover{
-    cursor:pointer;
-    background-color: rgb(40, 120, 130);
-}
-.navButton.selected{
-    cursor:default;
-    background-color: rgb(80, 160, 170);
 }
