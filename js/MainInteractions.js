@@ -23,7 +23,6 @@ var mouseHoverY = 0;
 var propView = null;
 
 var focusedElementIndex = null;
-
 /**
  * if a click is released, place the object that corresponds with the button that was pressed
  * @param {*} event 
@@ -181,14 +180,14 @@ function displayProperties(index, obj){
     input.name = 'muscleRadioButton';
     input.value = key;
     input.id = `muscle${key}Selector`;
-    input.classList += 'muscleGraphSelector';
+    input.classList.add( 'muscleGraphSelector');
 
     const label = document.createElement('label');
-    label.classList += 'muscleRadioButtonLabel';
+    label.classList.add('muscleRadioButtonLabel');
     label.appendChild(input);
 
     const labelText = document.createElement('span');
-    labelText.classList += "muscleLabelText";
+    labelText.classList.add("muscleLabelText");
     labelText.innerText = `m${key}`;
     label.appendChild(labelText);
     
@@ -354,5 +353,7 @@ function setupInteractionEvents(){
 
   let pauseButton = document.getElementById("pausePlay")
   pauseButton.addEventListener("click", pauseButtonClicked);
+
+  setUpMuscleGraphEvents();
 
 }

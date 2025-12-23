@@ -79,8 +79,12 @@
                 <button id="pausePlay" class = "play"></button>
             </div>
         </div>
-        <div id = "muscleGraphParamView" class = "absolutePos">
-            <div id = "muscleGraphWrapperHeader">Header</div>
+        <div id = "muscleGraphWindow" class = "absolutePos">
+            <div id = "muscleGraphWindowHeader">
+                <div id = "graphHeaderText"></div>
+                <button id = "graphHeaderClose">&#10060;&#xfe0e;</button>
+
+            </div>
             <div id="muscleGraphWrapper">
                 <canvas id = "muscleForceGraph" class = "muscleGraph"></canvas>
                 <canvas id = "muscleLengthGraph" class = "muscleGraph"></canvas>
@@ -118,7 +122,8 @@
 
     <!-- Interface Layer -->
         <script src = "./js/Graph.js"></script>
-        <script src= "./js/interactions.js"></script>
+        <script src= "./js/MainInteractions.js"></script>
+        <script src = "./js/MuscleGraphFunctions.js"></script>
         <script src="./js/Demos.js"></script>
         <script src="./js/canvas_manager.js"></script>
 

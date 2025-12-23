@@ -82,11 +82,11 @@ ul{
     content: "🗑";
 }
 #moveLabel>.box::before{
-    content: "✋"
+    content: "✋";
 }
 #configureLabel>.box::before{
     font-size: 1.25em;
-    content: "⚙"
+    content: "⚙";
 }
 
 .controlLabel .box::before {
