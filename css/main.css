@@ -177,7 +177,7 @@ ul{
     border-color: transparent transparent transparent rgb(0, 0, 0);
 }
 #footerWrapper{
-    /* height gets overwritten by js, just set it to 0 so the element renders hidden on pageload*/
+    /* height gets dynamically overwritten by js, just set it to 0 so the element renders hidden on pageload*/
     height: 0;
     display:inline-flex;
     justify-content: center;
