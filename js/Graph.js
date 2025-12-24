@@ -9,9 +9,13 @@ const maxY = 150;
  * @param {Number} rawFontSize 
  * @param {Number} gridSpacing 
  * @param {Number} xMin 
- * @param {Number} xMax 
+ * @param {Number} xMax
+ * @param {Number} yMin
+ * @param {Number} yMax
  */
-function drawGrid(canvasCtx = ctx, canvasBoundingRect = canvasRect, rawFontSize = 4, gridSpacing = 10,  xMin = 0, xMax = maxX){
+function drawGrid(canvasCtx = ctx, canvasBoundingRect = canvasRect,
+    rawFontSize = 4, gridSpacing = 10,
+    xMin = 0, xMax = maxX, yMin = 0, yMax = maxX){
   canvasCtx.strokeStyle = '#a6a6a6';
   canvasCtx.fillStyle = '#a6a6a6'
 
@@ -22,31 +26,38 @@ function drawGrid(canvasCtx = ctx, canvasBoundingRect = canvasRect, rawFontSize 
   canvasCtx.font = fontSize + 'px bold arial'
   canvasCtx.lineWidth = 1;
 
+
+  canvasCtx.beginPath();
+  let xLinesDone = false;
+  let yLinesDone = false;
+  //let i = 0;
+  //while(!(xLinesDone and yLinesDone)){}
   for(let i = (xMin/gridSpacing) ; i < Math.round((xMax + xMin) / gridSpacing); i++){
-    canvasCtx.beginPath();
     //move to some incriment of 10 in graph coords 
     let graphingCoord = (i - (xMin/gridSpacing)) * gridSpacing;
 
     //scales scaling factor to fit whatever xMax is since 150 is the default
-    let canvasCoord = graphingCoord * (scalingFactor * (maxX/xMax));
+    let canvasCoord = canvasBoundingRect.width * ((graphingCoord - xMin) / (xMax - xMin));
 
+    
     let graphingCoordString = String(i * gridSpacing);
 
     //so the numbers arent exactly on the lines
     let coordDisplacement = 3;
 
-    //draw x lines
+    //draw y lines
     canvasCtx.fillText(graphingCoordString, canvasCoord + coordDisplacement, canvasBoundingRect.height);
     canvasCtx.moveTo(canvasCoord, 0);
     canvasCtx.lineTo(canvasCoord, canvasBoundingRect.height);
-    canvasCtx.stroke();
     
-    //draw y lines
+    
+    //draw x lines
     canvasCtx.fillText(graphingCoordString, coordDisplacement, canvasBoundingRect.height - canvasCoord);
     canvasCtx.moveTo(0, canvasCoord);
-    canvasCtx.lineTo(canvasRect.width, canvasCoord);
-    canvasCtx.stroke();
+    canvasCtx.lineTo(canvasBoundingRect.height, canvasCoord);
+    
   }
+  canvasCtx.stroke();
   
 }
 /**

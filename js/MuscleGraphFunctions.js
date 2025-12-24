@@ -67,11 +67,11 @@ function closeMuscleGraphWindow(){
 function mouseMoved(event){
     let mouseX = event.clientX - startingPosition.x;
     let mouseY = event.clientY - startingPosition.y;
-    move(mouseX, mouseY);
+    moveWindow(mouseX, mouseY);
 
 }
 //on click and drag of the header for the muscle graphs, move the muscle graph to x and y
-function move(x, y){
+function moveWindow(x, y){
     console.log("Moving")
     muscleGraphWindow.style.top = y;
     muscleGraphWindow.style.left = x;
@@ -90,6 +90,8 @@ function setUpMuscleGraphEvents(){
 
     let header = document.getElementById("muscleGraphWindowHeader");
     header.addEventListener("mousedown", headerClicked);
+
+    closed = muscleGraphWindow.classList.contains("hidden");
     
     let closeButton = document.getElementById('graphHeaderClose');
     closeButton.addEventListener("click", closeMuscleGraphWindow);

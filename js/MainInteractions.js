@@ -147,7 +147,23 @@ function viewMuscleProperties(event){
   sim.clearElementBorders();
   sim.updateElementBorder(muscleKey);
 
-  // generate fill 
+  let muscleWindow = document.getElementById("muscleGraphWindow");
+  let muscleWindowHeaderText = document.getElementById("graphHeaderText");
+
+  muscleWindowHeaderText.innerText = `Muscle${muscleKey}`;
+  muscleWindow.classList.remove("hidden");
+
+  for(let graph of muscleGraphs){
+    
+    let ctx = graph.getContext("2d");
+    let boundingRect = graph.getBoundingClientRect()
+
+    graph.width = boundingRect.width;
+    graph.height = boundingRect.height;
+    drawGrid(ctx, boundingRect, 3, 10, 50, 100, 1);
+  }
+
+  // fill each canvas graph with points
 
 }
 
@@ -223,11 +239,11 @@ function checkHoverEvent(event){
 
     if(isWithinRect(graphX, graphY, obj)){
       withinRect = true;
-      if(inspection){
+      if(inspection === true){
         displayProperties(index, obj);
-      }else if(trash){
+      }else if(trash === true){
 
-      }else if(move){
+      }else if(move === true){
         if(sim.connections.forwardGet(index) !== undefined){
           
           canvas.style.cursor = "not-allowed";
