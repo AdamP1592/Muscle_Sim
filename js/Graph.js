@@ -1,3 +1,5 @@
+
+
 //sets the graphing coordinate constraints
 const maxX = 150;
 const maxY = 150;
@@ -13,52 +15,129 @@ const maxY = 150;
  * @param {Number} yMin
  * @param {Number} yMax
  */
+
+function getGridRect(canvasWidth, canvasHeight, labelPaddingX, labelPaddingY, rawFontSize){
+
+} 
+function convertCanvasToGrid(){
+
+}
+function convertGridToGraph(){
+
+}
+function convertGraphToCanvas(){
+  
+}
+
 function drawGrid(canvasCtx = ctx, canvasBoundingRect = canvasRect,
     rawFontSize = 4, gridSpacing = 10,
-    xMin = 0, xMax = maxX, yMin = 0, yMax = maxX){
+    xMin = 0, xMax = maxX, yMin = 0, yMax = maxX,
+    xLabel = "", yLabel = ""){
   canvasCtx.strokeStyle = '#a6a6a6';
   canvasCtx.fillStyle = '#a6a6a6'
 
   canvasCtx.textAlign = "left";
   canvasCtx.textBaseline = "bottom";
 
-  let fontSize =  String(rawFontSize * scalingFactor);
+  let fontSize =  rawFontSize * scalingFactor;
   canvasCtx.font = fontSize + 'px bold arial'
-  canvasCtx.lineWidth = 1;
+
+
+  let lineWidth = 1;
+  canvasCtx.lineWidth = lineWidth;
 
 
   canvasCtx.beginPath();
   let xLinesDone = false;
   let yLinesDone = false;
-  //let i = 0;
-  //while(!(xLinesDone and yLinesDone)){}
-  for(let i = (xMin/gridSpacing) ; i < Math.round((xMax + xMin) / gridSpacing); i++){
-    //move to some incriment of 10 in graph coords 
-    let graphingCoord = (i - (xMin/gridSpacing)) * gridSpacing;
 
-    //scales scaling factor to fit whatever xMax is since 150 is the default
-    let canvasCoord = canvasBoundingRect.width * ((graphingCoord - xMin) / (xMax - xMin));
+  const y1 = String(yMin);
+  const y2 = String(yMax);
 
-    
-    let graphingCoordString = String(i * gridSpacing);
+  const widthY1 = ctx.measureText(y1).width;
+  const widthY2 = ctx.measureText(y2).width;
 
-    //so the numbers arent exactly on the lines
-    let coordDisplacement = 3;
+  const fontWidth = Math.max(widthY1, widthY2);
 
-    //draw y lines
-    canvasCtx.fillText(graphingCoordString, canvasCoord + coordDisplacement, canvasBoundingRect.height);
-    canvasCtx.moveTo(canvasCoord, 0);
-    canvasCtx.lineTo(canvasCoord, canvasBoundingRect.height);
-    
-    
-    //draw x lines
-    canvasCtx.fillText(graphingCoordString, coordDisplacement, canvasBoundingRect.height - canvasCoord);
-    canvasCtx.moveTo(0, canvasCoord);
-    canvasCtx.lineTo(canvasBoundingRect.height, canvasCoord);
-    
-  }
-  canvasCtx.stroke();
+  //left is the fontSize(height) of the text + the fontWidth for the grid
+  const gridLeft = fontSize + fontWidth;
+  const gridRight = canvasBoundingRect.width - (fontSize + fontWidth);
   
+
+  //top, since both label and grid numbering are on the same axis, it's just adjusting for label being below the grid numbering
+  const gridTop = (fontSize * 2);
+  const gridBottom = canvasBoundingRect.height - (fontSize * 2);
+
+
+  let i = 0;
+  
+  while(!(xLinesDone && yLinesDone)){
+    if(!xLinesDone){
+      canvasCtx.textAlign = "center";
+      canvasCtx.textBaseline = "top";
+      let graphingXCoord = (i * gridSpacing) + xMin;
+
+      //scales x to match the grid width(aka canvas width - label displacement). Adds label displacement so the x grid is shifted to the right of the label
+      let canvasXCoord = (gridRight - gridLeft) * ((graphingXCoord - xMin) / (xMax - xMin)) + gridLeft;
+      let graphingCoordString = String(graphingXCoord);
+
+
+      //draw gridline
+      canvasCtx.moveTo(canvasXCoord, gridTop);
+      canvasCtx.lineTo(canvasXCoord, gridBottom);
+      //draw text with arbitrary displacement(so text doesn't directly line up with line)
+      
+
+      //set whether this is the last visible line
+      xLinesDone = graphingXCoord >= xMax;
+
+      //draw labels for all grid lines that aren't
+
+      canvasCtx.fillText(graphingCoordString, canvasXCoord, gridBottom);
+      
+    }
+    if(!yLinesDone){
+      canvasCtx.textBaseline = "middle";
+      canvasCtx.textAlign = "right";
+      let graphingYCoord = (i * gridSpacing) + yMin;
+      //standard linear transformation would be (gridBottom - gridTop) * (y - yMin)/(yMax - yMin), but the coord has to be inverted too, so it's gridBottom - canvasY
+      let canvasYCoord = (gridBottom - gridTop) * ((graphingYCoord - yMin) / (yMax - yMin));
+      canvasYCoord = gridBottom - canvasYCoord
+
+      let graphingCoordString = String(graphingYCoord);
+
+      //draw gridline from x = labelDisplacement to the edge of the canvas
+      canvasCtx.moveTo(gridLeft, canvasYCoord);
+      canvasCtx.lineTo(gridRight, canvasYCoord);
+
+      //draw text with arbitrary displacement(so text doesn't directly line up with line)
+
+      //set whether this is the last visible line
+      yLinesDone = graphingYCoord >= yMax;
+
+      canvasCtx.fillText(graphingCoordString, gridLeft, canvasYCoord);
+    
+    }
+    i++;  
+  }
+
+  //draw labels
+  canvasCtx.save();
+  canvasCtx.textAlign = "center";
+  
+  //place x label on bottom edge of canvas
+  canvasCtx.fillText(xLabel, (fontSize + (canvasBoundingRect.width - fontSize) / 2), canvasBoundingRect.height );
+  canvasCtx.textBaseline = "top"
+  
+  //place y label on top edge of canvas
+  canvasCtx.translate(0, fontSize + (canvasBoundingRect.height - fontWidth) / 2);
+  canvasCtx.rotate(-Math.PI / 2);
+  canvasCtx.fillText(yLabel, 0, 0)
+
+  //restore so the rest of the rendering can happen
+  canvasCtx.restore()
+  canvasCtx.stroke();
+  canvasCtx.fill()
 }
 /**
  * Takes in x and y in graphing coordinates.

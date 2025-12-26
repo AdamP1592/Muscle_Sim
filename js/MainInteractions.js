@@ -160,7 +160,7 @@ function viewMuscleProperties(event){
 
     graph.width = boundingRect.width;
     graph.height = boundingRect.height;
-    drawGrid(ctx, boundingRect, 3, 10, 50, 100, 1);
+    drawGrid(ctx, boundingRect, 3, 10, 0, 100, 50, 100, "x", "y");
   }
 
   // fill each canvas graph with points
