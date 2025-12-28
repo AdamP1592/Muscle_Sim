@@ -153,14 +153,23 @@ function viewMuscleProperties(event){
   muscleWindowHeaderText.innerText = `Muscle${muscleKey}`;
   muscleWindow.classList.remove("hidden");
 
-  for(let graph of muscleGraphs){
-    
-    let ctx = graph.getContext("2d");
-    let boundingRect = graph.getBoundingClientRect()
+  for(let muscleCanvas of muscleGraphs){
+    let xLabel = "Time(s)";
+    let yLabel = "";
+    switch(muscleCanvas.id){
+      case "muscleForceGraph":
+        yLabel = "Force(n)";
+        break;
+      case "muscleLengthGraph":
+        yLabel = "Length(mm)";
+        break;
+      case "muscleActivationGraph":
+        yLabel = "Activation Level";
+        break;
+    }
 
-    graph.width = boundingRect.width;
-    graph.height = boundingRect.height;
-    drawGrid(ctx, boundingRect, 3, 10, 0, 100, 50, 100, "x", "y");
+    let graph = new Graph(muscleCanvas, 3, 0, 10, 0, 10, 3, xLabel, yLabel);
+    graph.drawGrid()
   }
 
   // fill each canvas graph with points

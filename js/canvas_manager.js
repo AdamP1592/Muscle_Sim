@@ -5,6 +5,9 @@ const PropertyViewFontSize = 5;
 
 //pre creates variables for all the main parts of the sim
 var canvas = null;
+
+var mainGraph = null;
+
 var ctx = null;
 var sim = null;
 var scalingFactor = null;
@@ -162,7 +165,7 @@ function resizeCanvas(){
 
   scalingFactor = canvasRect.width/maxX;
 
-  //rescale st
+  //rescale property view
   propView.style.width = (PropertyViewWidth * scalingFactor);
   propView.style.height = (PropertyViewHeight * scalingFactor);
   propView.style.fontSize = (PropertyViewFontSize * scalingFactor);
@@ -204,9 +207,12 @@ window.addEventListener("load", function() {
   propView = document.getElementById("propertyView");
 
   canvas = document.getElementById("phys_sim");
+
+  mainGraph = new Graph(canvas, 4, 0, maxX, 0, maxY, 10)
   canvasRect = canvas.getBoundingClientRect();
 
   ctx = canvas.getContext("2d");
+
 
   setupInteractionEvents()
 
