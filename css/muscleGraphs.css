@@ -3,6 +3,7 @@
     margin-top:5px;
     margin-bottom:10px;
     width:100%;
+    background-color:rgb(60, 120, 120);
 }
 #muscleGraphWrapper{
     display:flex;
@@ -10,7 +11,7 @@
     align-items: center;
     justify-content: space-evenly;
 
-    background-color: gray;
+    background-color: rgb(60, 120, 120);
     width:100%;
     margin-left:auto;
     margin-right:auto;
@@ -40,6 +41,7 @@
     width:350px;
     left:0;
     top: 95vh;
+    border:1px solid black;
 }
 #graphHeaderClose{
     cursor:pointer;

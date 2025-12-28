@@ -155,11 +155,13 @@ function viewMuscleProperties(event){
   muscleWindowHeaderText.innerText = `Muscle${muscleKey}`;
   muscleWindow.classList.remove("hidden");
   muscleGraphClosed = false;
-
-  for(let muscleCanvas of muscleGraphs){
+  muscleGraphs = [];
+  for(let muscleCanvas of muscleCanvases){
     let xLabel = "Time(s)";
     let yLabel = "";
     let data = new ScrollingMap(0)
+
+    let graphObject = {};
     switch(muscleCanvas.id){
       case "muscleForceGraph":
         yLabel = "Force(n)";
@@ -175,8 +177,12 @@ function viewMuscleProperties(event){
         break;
     }
 
-    let graph = new Graph(muscleCanvas, 3, 0, 10, 0, 10, 10, xLabel, yLabel);
-    graph.drawDotGraph(data, true);
+
+    let graph = new Graph(muscleCanvas, 3, 0, 10, 0, 10, 5, xLabel, yLabel);
+    graphObject.data = data;
+    graphObject.graph = graph;
+    graph.drawDotPlot(data, true);
+    muscleGraphs.push(graphObject)
   }
 
   // fill each canvas graph with points

@@ -1,5 +1,5 @@
 var muscleGraphWindow;
-var muscleGraphs;
+var muscleCanvases;
 
 //For moving the window
 var muscleWindowHeaderClicked = false;
@@ -53,14 +53,15 @@ function moveEventOrchestrator(event){
 function closeMuscleGraphWindow(){
     muscleGraphClosed = true;
     //since all graphs are the same size
-    let rect = muscleGraphs[0].getBoundingClientRect();
+    let rect = muscleCanvases[0].getBoundingClientRect();
     sim.clearElementBorders();
     //clear graphs
-    for(let graph of muscleGraphs){
+    for(let graph of muscleCanvases){
         let ctx = graph.getContext("2d");
         ctx.beginPath();
         ctx.clearRect(0, 0 , rect.width, rect.height);
     }
+    muscleGraphs = [];
     muscleGraphWindow.classList.add( "hidden");
 }
 
@@ -82,9 +83,9 @@ function moveWindow(x, y){
  */
 function setUpMuscleGraphEvents(){
     muscleGraphWindow = document.getElementById("muscleGraphWindow");
-    muscleGraphs = [];
+    muscleCanvases = [];
     for(let graph of document.getElementsByClassName('muscleGraph')){
-        muscleGraphs.push(graph);
+        muscleCanvases.push(graph);
     }
 
     let header = document.getElementById("muscleGraphWindowHeader");

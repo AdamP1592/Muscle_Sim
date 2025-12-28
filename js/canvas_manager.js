@@ -2,11 +2,11 @@
 const PropertyViewWidth = 30;
 const PropertyViewHeight = 20;
 const PropertyViewFontSize = 5;
-
 //pre creates variables for all the main parts of the sim
 var canvas = null;
 
 var mainGraph = null;
+var muscleGraphs = [];
 
 var ctx = null;
 var sim = null;
@@ -66,7 +66,7 @@ function drawMuscles(){
     ctx.beginPath();
     ctx.strokeStyle = '#c21212ff';
     ctx.lineWidth = 3
-    ctx.moveTo(startX, startY );
+    ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
 
     ctx.stroke();
@@ -78,8 +78,6 @@ function drawObjects(){
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for(let [index, obj] of sim.objects){
-
-
     ctx.fillStyle = obj.color;
 
     let canvasWidth = obj.width * scalingFactor;
@@ -117,24 +115,17 @@ function draw(currentTime){
       sim.step(dt);
     }
   }
+  
   if (elapsedTime > 1000/fps){
-    //every second
-    // in case fps is low, the sim adjusts each subsequent number
-    // of steps to fit real-time simulation
-    
-    // DEBUG: let stepCount = 1;
-    //clear canvas
-    ctx.beginPath();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fill();
+    mainGraph.drawMap(sim.forceAddingElements, sim.objects, scalingFactor)
 
-    // draw grid
-    drawGrid();
-    // draw muscles
-    drawMuscles();
-    // draw rects
-    drawObjects();
-      
+    if(muscleGraphs.length !== 0){
+      for(let graphObject of muscleGraphs){
+        let data = graphObject.data;
+        let graph = graphObject.graph;
+        graph.drawDotPlot(data, true);
+      }
+    }
     // update sim 
     lastFrameTime = currentTime;
   }
@@ -164,7 +155,10 @@ function resizeCanvas(){
   canvas.height = canvasRect.height;
 
   scalingFactor = canvasRect.width/maxX;
-
+  if(mainGraph instanceof Graph){
+    mainGraph.updateSizing();
+  }
+  
   //rescale property view
   propView.style.width = (PropertyViewWidth * scalingFactor);
   propView.style.height = (PropertyViewHeight * scalingFactor);
@@ -208,7 +202,8 @@ window.addEventListener("load", function() {
 
   canvas = document.getElementById("phys_sim");
 
-  mainGraph = new Graph(canvas, 4, 0, maxX, 0, maxY, 10)
+
+
   canvasRect = canvas.getBoundingClientRect();
 
   ctx = canvas.getContext("2d");
@@ -223,7 +218,8 @@ window.addEventListener("load", function() {
   canvas.height = canvasRect.height;
 
   resizeCanvas();
-
+  mainGraph = new Graph(canvas, 4, 0, maxX, 0, maxY, 15)
+  
   lastFrameTime = performance.now();
   startTime = performance.now()
   requestAnimationFrame(draw);

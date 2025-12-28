@@ -32,7 +32,9 @@ class Obj{
         this.x = x;
         this.y = y;
         this.color = color
+        this.borderColor = '#c21212ff';
         this.border = false;
+        this.borderSize = 3;
         this.muscles = []
     }
     getObjectInfo(){
@@ -119,6 +121,8 @@ class Muscle{
         this.muscle = null;
 
         const NumberOfDatapoints = 500;
+        this.borderColor = "white";
+        this.color = "red"
         // 500 data points
         this.forceData = new ScrollingMap(NumberOfDatapoints);
         this.activationData = new ScrollingMap(NumberOfDatapoints);

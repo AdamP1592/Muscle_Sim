@@ -29,16 +29,19 @@ class Graph{
     this.yLabel = yLabel;
     this.xLabel = xLabel;
 
-    this.gridSpacing = numGridLines;
+    this.rawFontSize = rawFontSize;
+
+    this.gridSpacing = 0;
     this.numGridLines = numGridLines;
-  
+    console.log(rawFontSize)
     this.updateCanvasBoundingRect();
     this.setFontSize(rawFontSize);
     this.gridBounds = this.getGridBounds()
     this.setGridSpacing();
   }
+  /* --------BUILD FUNCTIONS-------- */
   setGridSpacing(){
-    console.log(this.xMax - this.xMin, this.yMax - this.yMin)
+
     this.gridSpacingX = (this.xMax - this.xMin) / this.numGridLines;
     this.gridSpacingY = (this.yMax - this.yMin) / this.numGridLines;
   }
@@ -76,6 +79,12 @@ class Graph{
     this.canvas.width = this.boundingRect.width;
     this.canvas.height = this.boundingRect.height;
   }
+  updateSizing(){
+    this.updateCanvasBoundingRect();
+    this.setFontSize(this.rawFontSize);
+    this.gridBounds = this.getGridBounds();
+    this.setGridSpacing();
+  }
   setLabelMargin(){
     this.labelMarginLeft = this.yLabel.length != 0 ? this.fontSize: 0;
     this.labelMarginBottom = this.xLabel.length != 0 ? this.fontSize: 0;
@@ -90,7 +99,7 @@ class Graph{
 
       this.fontWidth = Math.max(widthY1, widthY2);
     */
-
+    console.log(this.fontSize)
     this.gridNumberingMarginLeft = this.fontSize;
 
     //for maintaining aspect ratio: = fontWidth. For reducing unused space: this.fontSize
@@ -113,6 +122,7 @@ class Graph{
 
     let marginLeft = this.labelMarginLeft + this.gridNumberingMarginLeft;
     let marginBottom = this.labelMarginBottom + this.gridNumberingMarginBottom;
+    
 
     bounds.width = this.boundingRect.width - (marginLeft * 2);
     bounds.left = marginLeft;
@@ -124,6 +134,32 @@ class Graph{
 
     return bounds;
   }
+
+  updateMinMax(pointsMap){
+      this.yMin = null;
+      this.yMax = null;
+      this.xMin = null;
+      this.xMax = null;
+      for(let [time, value] of pointsMap){
+        if(this.xMin === null){
+          this.xMin = time;
+          this.xMax = time;
+          this.yMin = value;
+          this.yMax = value;
+        }
+
+        this.xMin = Math.min(time, this.xMin);
+        this.yMin = Math.min(value, this.yMin);
+        this.xMax = Math.max(time, this.xMax);
+        this.yMax = Math.max(value, this.yMax);
+      }
+      this.setGridSpacing();
+
+
+  }
+  /* --------BUILD FUNCTIONS END-------- */
+  
+  /* --------COORDINATE CONVERSION FUNCTIONS-------- */
   /**
    * Linear mapping of x and y graphing coordinates to the grid coordinates. 
    * @param {Number} graphingX 
@@ -151,6 +187,82 @@ class Graph{
 
     return canvasY;
   }
+  /**
+   * Function that converts client coords to canvas coords
+   * @param {Number} clientX 
+   * @returns The canvas coordinate clientX corresponds to
+   */
+  clientXToCanvasX(clientX){
+    const canvasX = clientX - this.boundingRect.left;
+    return canvasX;
+  }
+  /**
+   * Function that converts client coords to canvas coords
+   * @param {Number} clientY 
+   * @returns The canvas coordinate clientY corresponds to
+   */
+  clientYToCanvasY(clientY){
+    const canvasY = clientY - this.boundingRect.top;
+    return canvasY;
+  }
+  /**
+   * Function that converts canvas coords to the graphing coords, automatically adjusting to the grid displayed
+   * @param {Number} canvasX 
+   * @returns The graphing coordiante canvasX corresponds to
+   */
+  canvasXToGraphingX(canvasX){
+    return ((canvasX - this.gridBounds.left) * ( this.xMax - this.xMin) / this.gridBounds.width) + this.xMin
+  }
+  /**
+   * Function that converts canvas coords to the graphing coords, automatically adjusting to the grid displayed
+   * @param {Number} canvasY
+   * @returns The graphing coordiante
+   */
+  canvasYToGraphingY(canvasY){
+    return ((canvasY - this.gridBounds.bottom) * (this.yMax - this.yMin) / ( -this.gridBounds.height)) + this.yMin
+  }
+  /**
+   * Converts from client coords to graphing coords, adjusting for the grid displacement
+   * @param {Number} clientX 
+   * @param {Number} clientY 
+   * @returns Graphing coordinates
+   */
+  clientCoordsToGraphing(clientX, clientY){
+    const canvasX = this.clientXToCanvasX(clientX);
+    const canvasY = this.clientYToCanvasY(clientY);
+
+    const graphingX = this.canvasXToGraphingX(canvasX);
+    const graphingY = this.canvasYToGraphingY(canvasY);
+     
+    return [graphingX, graphingY]
+  }
+  /* --------COORDINATE CONVERSION FUNCTIONS END-------- */
+
+  /* --------DRAW FUNCTIONS-------- */
+  clearGraph(){
+    this.ctx.clearRect(0, 0, this.boundingRect.width, this.boundingRect.height);
+  }
+
+  /**
+   * 
+   * @param {Number} canvasX1 
+   * @param {Number} canvasY1 
+   * @param {Number} canvasX2 
+   * @param {Number} canvasY2 
+   * @param {String} color 
+   * @param {Number} lineWidth 
+   */
+  drawLine(canvasX1, canvasY1, canvasX2, canvasY2, color, lineWidth = 1){
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.moveTo(canvasX1, canvasY1);
+    this.ctx.lineTo(canvasX2, canvasY2);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
   drawCircle(canvasX, canvasY, radius){
     this.ctx.beginPath();
     this.ctx.arc(canvasX, canvasY, radius, 0, 2 * Math.PI, false);
@@ -158,31 +270,53 @@ class Graph{
   }
   /**
    * 
+   * @param {Number} canvasX 
+   * @param {Number} canvasY 
+   * @param {Number} width 
+   * @param {Number} height 
+   * @param {String} fillColor 
+   * @param {String} text 
+   * @param {Number} fontSize 
+   * @param {Number} borderSize 
+   * @param {String} borderColor 
+   * @param {Boolean} centered 
+   */
+  drawRect(canvasX, canvasY, width, height, fillColor,
+          text = "", fontSize = 0, borderSize = 0, borderColor="", centered = true){
+    var left = canvasX;
+    var top = canvasY;
+    if(centered){
+      left = canvasX - (width / 2);
+      top = canvasY - (height /2);
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+    }
+    
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.fillStyle = fillColor;
+    this.ctx.strokeStyle = borderColor;
+    this.ctx.lineWidth = borderSize;
+
+    this.ctx.fillRect(left, top, width, height);
+    if(borderSize > 0) this.ctx.strokeRect(left, top, width, height);
+
+    this.ctx.fillStyle = '#76acadff'
+    this.ctx.font = `${fontSize}px arial`
+    this.ctx.fillText(text, canvasX, canvasY);
+
+    this.ctx.restore()
+  }
+  /**
+   * 
    * @param {ScrollingMap} pointsMap
    * @param {Boolean} resize 
    */
-  drawDotGraph(pointsMap, resize = false){
+  drawDotPlot(pointsMap, resize = false){
     if(resize === true){
-      this.yMin = null;
-      this.yMax = null;
-      this.xMin = null;
-      this.xMax = null;
-      for(let [time, value] of pointsMap){
-        if(this.xMin === null){
-          this.xMin = time;
-          this.xMax = time;
-          this.yMin = value;
-          this.yMax = value;
-        }
-
-        this.xMin = Math.min(time, this.xMin);
-        this.yMin = Math.min(value, this.yMin);
-        this.xMax = Math.max(time, this.xMax);
-        this.yMax = Math.max(value, this.yMax);
-      }
-      this.setGridSpacing();
-
+      this.updateMinMax(pointsMap)
     }
+    this.clearGraph();
     for(let [time, value] of pointsMap){
       let[canvasX, canvasY] = this.graphToCanvasCoords(time, value);
       this.drawCircle(canvasX, canvasY, 3);
@@ -191,25 +325,67 @@ class Graph{
   }
   /**
    * 
-   * @param {FreeList} entityFreeList 
+   * @param {FreeList} entityFreeList
+   * @param {Boolean} centered
+   * @param {Number} scalingFactor
    */
-  drawEntities(entityFreeList){
+  drawEntities(entityFreeList, centered = true, scalingFactor = 1){
+    const fontSize = 5 * scalingFactor;
+    for(let [index, entity] of entityFreeList){
 
+      const graphX = entity.x;
+      const graphY = entity.y;
+
+      const [canvasX, canvasY] = this.graphToCanvasCoords(graphX, graphY);
+
+      const width = entity.width * scalingFactor;
+      const height = entity.height * scalingFactor;
+
+      const borderColor = entity.borderColor;
+      const fillColor = entity.color;
+
+      const borderSize = entity.border ? entity.borderSize: 0;
+
+      this.drawRect(canvasX, canvasY, width, height, fillColor, String(index), fontSize, borderSize, borderColor, centered);
+    }
   }
+
   /**
    * 
    * @param {FreeList} muscleFreeList 
    */
-  drawMuscles(muscleFreeList){
+  drawMuscles(muscleFreeList, entityFreeList, centered = true){
+    for(let [index, element] of muscleFreeList){
+      const obj1 = entityFreeList.get(element.index1);
+      const obj2 = entityFreeList.get(element.index2);
 
+      let [canvasX1, canvasY1] = this.graphToCanvasCoords(obj1.x, obj1.y);
+      let [canvasX2, canvasY2] = this.graphToCanvasCoords(obj2.x, obj2.y);
+
+      if(centered){
+        canvasX1 -= (obj1.width / 2);
+        canvasY1 -= (obj1.height / 2);
+        canvasX2 -= (obj2.width / 2);
+        canvasY2 -= (obj2.height /2)
+      }
+      
+      if(element.border === true){
+        this.drawLine(canvasX1, canvasY1, canvasX2, canvasY2, element.borderColor, 8);
+      }
+      this.drawLine(canvasX1, canvasY1, canvasX2, canvasY2, element.color, 3);
+    }
   }
   /**
    * 
-   * @param {List} points
+   * @param {ScrollingMap} points
    */
-  drawLineGraph(points){
-
-  }
+  drawMap(muscleFreeList, entityFreeList, scalingFactor = 1){ 
+    this.clearGraph();
+    this.drawGrid();
+    this.drawMuscles(muscleFreeList, entityFreeList, true);
+    this.drawEntities(entityFreeList, true, scalingFactor);
+    
+  } 
   
 
   /**
@@ -241,7 +417,6 @@ class Graph{
       if(!xLinesDone){
         this.ctx.beginPath();
         //generate grid coordiante
-        
         if(nextGraphingX === null){
           nextGraphingX = i * this.gridSpacingX + this.xMin; 
         }
@@ -252,7 +427,6 @@ class Graph{
 
         this.ctx.textAlign = "center"
         this.ctx.textBaseline = "top";
-
 
         //draw gridline
         this.ctx.moveTo(canvasXCoord, this.gridBounds.top);
@@ -354,24 +528,8 @@ class Graph{
     this.ctx.beginPath();
 
   }
-  updateMinMax(pointsMap, keysArray = null){
-    if(keysArray === null) keysArray = [...pointsMap.scrollingMap.keys()];
+  /* --------DRAW FUNCTIONS-------- */
 
-    let minKey = keysArray[0];
-    let maxKey = keysArray[keysArray.length - 1];
-
-    this.xMin = minKey;
-    this.xMax = maxKey;
-
-    this.yMin = pointsMap.get(keysArray[0]);
-    this.yMax = pointsMap.get(keysArray[0]);
-    for(let [key, value] of scrollingMap){
-      this.yMin = Math.min(value, this.yMin);
-      this.yMax = Math.max(value, this.yMax);  
-    }
-    return 1;
-
-  }
   /**
    * Plots a series of points 
    * @param {ScrollingMap} pointsMap 
@@ -381,11 +539,8 @@ class Graph{
 
     this.ctx.save();
 
-    let keysArray = [...pointsMap.scrollingMap.keys()];
-    if(keysArray.length < 1) return;
-
     if(minMaxUpdated){
-      this.updateMinMax(pointsMap, keysArray)
+      this.updateMinMax(pointsMap)
     }
 
     const radius = this.fontWidth;
