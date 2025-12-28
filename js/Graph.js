@@ -16,7 +16,7 @@ class Graph{
    * @param {String} xLabel 
    * @param {String} yLabel 
    */
-  constructor(canvas, rawFontSize, xMin, xMax, yMin, yMax, gridSpacing = 10, xLabel = "", yLabel = ""){
+  constructor(canvas, rawFontSize, xMin, xMax, yMin, yMax, numGridLines = 10, xLabel = "", yLabel = ""){
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
@@ -29,11 +29,18 @@ class Graph{
     this.yLabel = yLabel;
     this.xLabel = xLabel;
 
-    this.gridSpacing = gridSpacing;
+    this.gridSpacing = numGridLines;
+    this.numGridLines = numGridLines;
   
     this.updateCanvasBoundingRect();
     this.setFontSize(rawFontSize);
     this.gridBounds = this.getGridBounds()
+    this.setGridSpacing();
+  }
+  setGridSpacing(){
+    console.log(this.xMax - this.xMin, this.yMax - this.yMin)
+    this.gridSpacingX = (this.xMax - this.xMin) / this.numGridLines;
+    this.gridSpacingY = (this.yMax - this.yMin) / this.numGridLines;
   }
   /**
    * @param {String} labelX 
@@ -107,8 +114,6 @@ class Graph{
     let marginLeft = this.labelMarginLeft + this.gridNumberingMarginLeft;
     let marginBottom = this.labelMarginBottom + this.gridNumberingMarginBottom;
 
-    console.log(marginLeft, this.labelMarginLeft, this.gridNumberingMarginLeft, this.fontSize)
-
     bounds.width = this.boundingRect.width - (marginLeft * 2);
     bounds.left = marginLeft;
     bounds.right = bounds.width + bounds.left;
@@ -146,12 +151,43 @@ class Graph{
 
     return canvasY;
   }
+  drawCircle(canvasX, canvasY, radius){
+    this.ctx.beginPath();
+    this.ctx.arc(canvasX, canvasY, radius, 0, 2 * Math.PI, false);
+    this.ctx.fill();
+  }
   /**
    * 
-   * @param {BiMap} pointsBiMap 
+   * @param {ScrollingMap} pointsMap
+   * @param {Boolean} resize 
    */
-  drawPoints(pointsBiMap){
+  drawDotGraph(pointsMap, resize = false){
+    if(resize === true){
+      this.yMin = null;
+      this.yMax = null;
+      this.xMin = null;
+      this.xMax = null;
+      for(let [time, value] of pointsMap){
+        if(this.xMin === null){
+          this.xMin = time;
+          this.xMax = time;
+          this.yMin = value;
+          this.yMax = value;
+        }
 
+        this.xMin = Math.min(time, this.xMin);
+        this.yMin = Math.min(value, this.yMin);
+        this.xMax = Math.max(time, this.xMax);
+        this.yMax = Math.max(value, this.yMax);
+      }
+      this.setGridSpacing();
+
+    }
+    for(let [time, value] of pointsMap){
+      let[canvasX, canvasY] = this.graphToCanvasCoords(time, value);
+      this.drawCircle(canvasX, canvasY, 3);
+    }
+    this.drawGrid();
   }
   /**
    * 
@@ -207,7 +243,7 @@ class Graph{
         //generate grid coordiante
         
         if(nextGraphingX === null){
-          nextGraphingX = i * this.gridSpacing + this.xMin; 
+          nextGraphingX = i * this.gridSpacingX + this.xMin; 
         }
         const graphingXCoord = nextGraphingX;
         const canvasXCoord = this.graphXToCanvasX(nextGraphingX);;
@@ -224,11 +260,12 @@ class Graph{
         this.ctx.stroke();
         //placing grid numbering text
         if(i!==0){
-          let graphingCoordString = String(graphingXCoord);
+          let roundedX = Math.round(10 * graphingXCoord) / 10;
+          let graphingCoordString = String(roundedX);
           this.ctx.fillText(graphingCoordString, canvasXCoord, this.gridBounds.bottom + gridNumberDisplacement);
         }
 
-        nextGraphingX =  (i + 1) * this.gridSpacing + this.xMin
+        nextGraphingX =  (i + 1) * this.gridSpacingX + this.xMin
         //set whether this is the last visible line
         xLinesDone = nextGraphingX >= this.xMax;
       }
@@ -237,7 +274,7 @@ class Graph{
         //generate grid coordiante
 
         if(nextGraphingY === null){
-          nextGraphingY = i * this.gridSpacing + this.yMin; 
+          nextGraphingY = i * this.gridSpacingY + this.yMin; 
         }
         const graphingYCoord = nextGraphingY;
         const canvasYCoord = this.graphYToCanvasY(nextGraphingY);
@@ -254,12 +291,13 @@ class Graph{
 
         //placing grid numbering text
         if(i !== 0){
-          let graphingCoordString = String(graphingYCoord);
+          let roundedY = Math.round(10 * graphingYCoord) / 10;
+          let graphingCoordString = String(roundedY);
           this.ctx.fillText(graphingCoordString, this.gridBounds.left + gridNumberDisplacement, canvasYCoord);
         }
 
         //update the next graphing coord
-        nextGraphingY = (i + 1) * this.gridSpacing + this.yMin
+        nextGraphingY = (i + 1) * this.gridSpacingY + this.yMin
         //set whether this is the last visible line
         yLinesDone = nextGraphingY >= this.yMax;
       }

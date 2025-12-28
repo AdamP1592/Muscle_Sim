@@ -1,7 +1,7 @@
 // JS is stupid and is single inheritance so this is the best I could come up with
 
 //interval is every 200 time steps(at dt = 0.0001, data is collected every 0.02 seconds)
-const SAMPLING_INTERVAL = 200;
+const SAMPLING_INTERVAL = 20;
 
 function copyPrototypeMethods(target, source, rebind = false) {
     const proto = Object.getPrototypeOf(source);
@@ -270,7 +270,8 @@ class SkeletalMuscle extends Muscle{
         
         if(currentStepCount % SAMPLING_INTERVAL === 0){
             this.forceData.push(t, force);
-            this.activationData.push(t, this.muscle.activation);
+            //since abar is negative activation is negative, to make the visualization nice just invert the sign
+            this.activationData.push(t, - this.muscle.activation);
             this.lengthData.push(t, length)
         }
 

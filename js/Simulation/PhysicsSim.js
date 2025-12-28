@@ -143,4 +143,7 @@ class PhysicsSim{
         console.log(elementIndex)
         this.#forceAddingElements.get(elementIndex).muscle.setStimulation(offset, type, freq);
     }
+    getElement(index){
+        return this.#forceAddingElements.get(index)
+    }
 }

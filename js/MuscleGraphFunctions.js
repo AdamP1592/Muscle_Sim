@@ -7,7 +7,7 @@ var muscleWindowHeaderClicked = false;
 var movementPending = false;
 var lastEvent = null;
 var startingPosition = {x: null, y: null};
-var closed = false;
+var muscleGraphClosed = false;
 
 
 /* -----------INTERACTIONS WITH THE WINDOW----------- */
@@ -32,8 +32,9 @@ function headerReleased(event){
 }
 
 function moveEventOrchestrator(event){
-    if(!muscleWindowHeaderClicked || closed) return;
     
+    if(!muscleWindowHeaderClicked || !muscleGraphWindow) return;
+
     lastEvent = event;
     // prevent multiple animation requests from happening per frame
     if(!movementPending){
@@ -50,17 +51,16 @@ function moveEventOrchestrator(event){
  * Clears all the graphs and then hides the viewer
  */
 function closeMuscleGraphWindow(){
-    closed = true;
+    muscleGraphClosed = true;
     //since all graphs are the same size
     let rect = muscleGraphs[0].getBoundingClientRect();
-
+    sim.clearElementBorders();
     //clear graphs
     for(let graph of muscleGraphs){
         let ctx = graph.getContext("2d");
         ctx.beginPath();
         ctx.clearRect(0, 0 , rect.width, rect.height);
     }
-    
     muscleGraphWindow.classList.add( "hidden");
 }
 
@@ -72,7 +72,6 @@ function mouseMoved(event){
 }
 //on click and drag of the header for the muscle graphs, move the muscle graph to x and y
 function moveWindow(x, y){
-    console.log("Moving")
     muscleGraphWindow.style.top = y;
     muscleGraphWindow.style.left = x;
 }
@@ -91,7 +90,7 @@ function setUpMuscleGraphEvents(){
     let header = document.getElementById("muscleGraphWindowHeader");
     header.addEventListener("mousedown", headerClicked);
 
-    closed = muscleGraphWindow.classList.contains("hidden");
+    muscleGraphClosed = muscleGraphWindow.classList.contains("hidden");
     
     let closeButton = document.getElementById('graphHeaderClose');
     closeButton.addEventListener("click", closeMuscleGraphWindow);

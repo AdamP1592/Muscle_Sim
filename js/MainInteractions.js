@@ -147,29 +147,36 @@ function viewMuscleProperties(event){
   sim.clearElementBorders();
   sim.updateElementBorder(muscleKey);
 
+  let muscle = sim.getElement(muscleKey)
+
   let muscleWindow = document.getElementById("muscleGraphWindow");
   let muscleWindowHeaderText = document.getElementById("graphHeaderText");
 
   muscleWindowHeaderText.innerText = `Muscle${muscleKey}`;
   muscleWindow.classList.remove("hidden");
+  muscleGraphClosed = false;
 
   for(let muscleCanvas of muscleGraphs){
     let xLabel = "Time(s)";
     let yLabel = "";
+    let data = new ScrollingMap(0)
     switch(muscleCanvas.id){
       case "muscleForceGraph":
         yLabel = "Force(n)";
+        data = muscle.forceData;
         break;
       case "muscleLengthGraph":
         yLabel = "Length(mm)";
+        data = muscle.lengthData;
         break;
       case "muscleActivationGraph":
         yLabel = "Activation Level";
+        data = muscle.activationData;
         break;
     }
 
-    let graph = new Graph(muscleCanvas, 3, 0, 10, 0, 10, 3, xLabel, yLabel);
-    graph.drawGrid()
+    let graph = new Graph(muscleCanvas, 3, 0, 10, 0, 10, 10, xLabel, yLabel);
+    graph.drawDotGraph(data, true);
   }
 
   // fill each canvas graph with points
