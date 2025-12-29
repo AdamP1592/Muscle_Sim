@@ -56,6 +56,7 @@ function closeMuscleGraphWindow(){
     let rect = muscleCanvases[0].getBoundingClientRect();
     sim.clearElementBorders();
     //clear graphs
+    focusedElementIndex = null;
     for(let graph of muscleCanvases){
         let ctx = graph.getContext("2d");
         ctx.beginPath();
@@ -76,7 +77,6 @@ function moveWindow(x, y){
     muscleGraphWindow.style.top = y;
     muscleGraphWindow.style.left = x;
 }
-
 
 /**
  * Sets up all events pertaining to the muscle graphs and the viewer as a whole

@@ -34,8 +34,8 @@ function drawMuscles(){
     let obj1 = sim.objects.get(element.index1);
     let obj2 = sim.objects.get(element.index2);
 
-    let [obj1X, obj1Y] = convertGraphCoordsToCanvas(obj1.x, obj1.y);
-    let [obj2X, obj2Y] = convertGraphCoordsToCanvas(obj2.x, obj2.y);
+    let [obj1X, obj1Y] = mainGraph.clientCoordsToGraphing(obj1.x, obj1.y);
+    let [obj2X, obj2Y] = mainGraph.clientCoordsToGraphing(obj2.x, obj2.y);
 
     const canvasWidth1 = obj1.width * scalingFactor
     const canvasHeight1 = obj1.height * scalingFactor
@@ -83,7 +83,7 @@ function drawObjects(){
     let canvasWidth = obj.width * scalingFactor;
     let canvasHeight = obj.height * scalingFactor;
     
-    let [xCanvas, yCanvas] = convertGraphCoordsToCanvas(obj.x, obj.y)
+    let [xCanvas, yCanvas] = mainGraph.clientCoordsToGraphing(obj.x, obj.y)
 
     let topCornerX = xCanvas - (canvasWidth/2);
     let topCornerY = yCanvas - (canvasHeight/2);
@@ -123,7 +123,7 @@ function draw(currentTime){
       for(let graphObject of muscleGraphs){
         let data = graphObject.data;
         let graph = graphObject.graph;
-        graph.drawDotPlot(data, true);
+        graph.drawLineGraph(data, true);
       }
     }
     // update sim 
@@ -201,8 +201,6 @@ window.addEventListener("load", function() {
   propView = document.getElementById("propertyView");
 
   canvas = document.getElementById("phys_sim");
-
-
 
   canvasRect = canvas.getBoundingClientRect();
 

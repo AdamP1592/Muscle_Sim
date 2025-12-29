@@ -31,7 +31,7 @@ function click_released(event){
   let x = event.clientX;
   let y = event.clientY;
 
-  let [graphX, graphY] = convertClientCoordsToGraph(x, y)
+  let [graphX, graphY] = mainGraph.clientCoordsToGraphing(x, y);
   //in bounds
   if(!( graphX < 0 || graphX < 0 || graphX > maxX || graphX > maxY)){
 
@@ -91,7 +91,7 @@ function keyReleased(event){
  */
 function leftClickCanvas(event) {
   event.preventDefault();
-  const[graphX, graphY] = convertClientCoordsToGraph(event.clientX, event.pageY)
+  const[graphX, graphY] = mainGraph.clientCoordsToGraphing(event.clientX, event.pageY)
 
   let borderCount = 0;
   //to prevent having to index a list
@@ -181,7 +181,7 @@ function viewMuscleProperties(event){
     let graph = new Graph(muscleCanvas, 3, 0, 10, 0, 10, 5, xLabel, yLabel);
     graphObject.data = data;
     graphObject.graph = graph;
-    graph.drawDotPlot(data, true);
+    graph.drawLineGraph(data, true);
     muscleGraphs.push(graphObject)
   }
 
@@ -243,7 +243,7 @@ function displayProperties(index, obj){
 }
 
 function moveObject(object, cursorX, cursorY){
-  let [graphX, graphY] = convertClientCoordsToGraph(cursorX, cursorY);
+  let [graphX, graphY] = mainGraph.clientCoordsToGraphing(cursorX, cursorY);
 
 
 }
@@ -252,7 +252,7 @@ function checkHoverEvent(event){
   mouseHoverX = event.clientX;
   mouseHoverY = event.clientY;
   
-  let [graphX, graphY] = convertClientCoordsToGraph(mouseHoverX, mouseHoverY)
+  let [graphX, graphY] = mainGraph.clientCoordsToGraphing(mouseHoverX, mouseHoverY)
 
   let assignMoveOnClick = false;
 
