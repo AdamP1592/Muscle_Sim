@@ -4,6 +4,7 @@
         <link rel="stylesheet" href="./css/propertyView.css">
         <link rel="stylesheet" href="./css/muscleGraphs.css">
         <link rel="stylesheet" href="./css/navbar.css">
+        <link rel="stylesheet" href="./css/configMenu.css">
         <meta charset="utf-8">
     </header>
     <body>
@@ -93,16 +94,17 @@
         </div>
         <div id="propertyView" class = "hidden absolutePos">
         </div>
-        <div id = "configureMenu" class = "hidden absolutePos">
-                <div id = "activationWrapper">
-                    <button name="muscleActivationButton" id="sinActivation">Sin</button>
-                    <button name="muscleActivationButton" id="squreActivation">Square</button>
-                    <button name="muscleActivationButton" id="sinActivation">Constant</button>
-                    <button name="muscleActivationButton" id="sinActivation">None</button>
-                </div>
-                <div id = "activationProperties"></div>
+        <div id = "configureMuscleMenu" class = "absolutePos hidden">
+            
+            <div id = "activationWrapper">
+                <button name="muscleActivationButton" id="sinActivation" class="muscleActivationButton">Sin</button>
+                <button name="muscleActivationButton" id="squreActivation" class="muscleActivationButton">Square</button>
+                <button name="muscleActivationButton" id="sinActivation" class="muscleActivationButton">Constant</button>
+                <button name="muscleActivationButton" id="sinActivation" class="muscleActivationButton">None</button>
             </div>
+            <div id = "activationProperties"></div>
         </div>
+        
     </body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.0.0/math.js"></script>
     

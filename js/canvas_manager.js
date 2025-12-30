@@ -206,17 +206,15 @@ window.addEventListener("load", function() {
 
   ctx = canvas.getContext("2d");
 
-
   setupInteractionEvents()
 
   create_onclick_events();
-  
 
   canvas.width = canvasRect.width;
   canvas.height = canvasRect.height;
 
   resizeCanvas();
-  mainGraph = new Graph(canvas, 4, 0, maxX, 0, maxY, 15)
+  mainGraph = new Graph(canvas, 4, 0, maxX, 0, maxY, 15);
   
   lastFrameTime = performance.now();
   startTime = performance.now()

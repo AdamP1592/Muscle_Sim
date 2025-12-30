@@ -1,51 +1,113 @@
-var muscleGraphWindow;
-var muscleCanvases;
+class MinatureWindow{
+    /**
+     * 
+     * @param {DOM Object} miniWindow 
+     */
+    constructor(miniWindow){
+        this.miniWindow = miniWindow;
 
-//For moving the window
-var muscleWindowHeaderClicked = false;
+        this.target = null;
+        this.targetClicked = false;
 
-var movementPending = false;
-var lastEvent = null;
-var startingPosition = {x: null, y: null};
-var muscleGraphClosed = false;
+        this.movementPending = false;
+
+        this.startingPosition = {x: null, y:null}
+
+        this.lastEvent = null;
+
+        this.clicked = this.clicked.bind(this);
+        this.released = this.released.bind(this);
+        this.moveEventOrchestrator = this.moveEventOrchestrator.bind(this);
+        this.closeWindow = this.closeWindow.bind(this);
+        this.openWindow = this.openWindow.bind(this);
 
 
-/* -----------INTERACTIONS WITH THE WINDOW----------- */
-function headerClicked(event){
-    event.preventDefault()
+        this.closed = miniWindow.classList.contains("hidden");
+    }
+    /*--------EVENT CREATION--------*/
+    addMoveEvent(target){
+        //bind all functions to this so the context is maintained for this
+        this.target = target;
+        target.addEventListener("mousedown", this.clicked);
+    }
+    /**
+     * 
+     * @param {DomElement} closeButton 
+     * @param {function} secondaryEvent 
+     */
+    addCloseEvent(closeButton, secondaryEvent = null){
 
-    let rect = muscleGraphWindow.getBoundingClientRect();
+        closeButton.addEventListener("click", this.closeWindow);
+        if(typeof secondaryEvent === 'function'){
+            closeButton.addEventListener("click", secondaryEvent);
+        }
+    }
+    /*--------HELPER FUNCTIONS--------*/
+    convertEventCoordsToClickedCoords(clientX, clientY){
+        console.log(clientX, clientY)
+        const rect = this.miniWindow.getBoundingClientRect();
+        let x = clientX - rect.left;
+        let y = clientY - rect.top;
+        return [x, y]
+    }
+    /*--------CLICK AND DRAG EVENT--------*/
+    clicked(event){
+        event.preventDefault();
 
-    startingPosition.x = event.clientX - rect.left;
-    startingPosition.y = event.clientY - rect.top;
+        const [x, y] = this.convertEventCoordsToClickedCoords(event.clientX, event.clientY);
+        this.startingPosition.x = x;
+        this.startingPosition.y = y;
 
-    console.log("Header clicked")
-    muscleWindowHeaderClicked = true;
-    document.addEventListener('mousemove', moveEventOrchestrator);
-    document.addEventListener('mouseup', headerReleased)
-}
+        this.targetClicked = true;
+        document.addEventListener('mousemove', this.moveEventOrchestrator);
+        document.addEventListener('mouseup', this.released)
+    }
+    released(event){
+        this.targetClicked = false;
+        document.removeEventListener('mousemove', this.moveEventOrchestrator);
+        document.removeEventListener('mouseup', this.released)
+        this.targetClicked = false;
+    }
+    moveEventOrchestrator(event){
+        if(!this.targetClicked || !this.miniWindow) return;
 
-function headerReleased(event){
-    muscleWindowHeaderClicked = false;
-    document.removeEventListener('mousemove', moveEventOrchestrator);
-    document.removeEventListener('mouseup', headerReleased)
-}
+        this.lastEvent = event;
+        // prevent multiple animation requests from happening per frame
+        if(!this.movementPending){
+            this.movementPending = true;
+            // lastEvent to ensure the movement is adjusted to the most recent info
+            window.requestAnimationFrame( () =>{
+                this.movementPending = false;
+                this.completeMove()
+            })
+        }
+    }
+    completeMove(){
+        let mouseX = this.lastEvent.clientX - this.startingPosition.x;
+        let mouseY = this.lastEvent.clientY - this.startingPosition.y;
+        this.move(mouseX, mouseY);
+    }
+    /*--------MANUAL MOVEMENT FUNCTION--------*/
+    move(x, y){
+        this.miniWindow.style.top = y;
+        this.miniWindow.style.left = x;
+    }
 
-function moveEventOrchestrator(event){
-    
-    if(!muscleWindowHeaderClicked || !muscleGraphWindow) return;
+    /*--------CLOSE EVENT STUFF--------*/
 
-    lastEvent = event;
-    // prevent multiple animation requests from happening per frame
-    if(!movementPending){
-        movementPending = true;
-        // lastEvent to ensure the movement is adjusted to the most recent info
-        window.requestAnimationFrame( () =>{
-            movementPending = false;
-            mouseMoved(lastEvent)
-        })
+
+    closeWindow(){
+        this.windowClosed = false;
+        this.miniWindow.classList.add("hidden");
+    }
+    openWindow(){
+        this.windowClosed = true;
+        this.miniWindow.classList.remove("hidden");
     }
 }
+
+var muscleMiniWindow;
+var muscleCanvases;
 
 /**
  * Clears all the graphs and then hides the viewer
@@ -63,19 +125,7 @@ function closeMuscleGraphWindow(){
         ctx.clearRect(0, 0 , rect.width, rect.height);
     }
     muscleGraphs = [];
-    muscleGraphWindow.classList.add( "hidden");
-}
-
-function mouseMoved(event){
-    let mouseX = event.clientX - startingPosition.x;
-    let mouseY = event.clientY - startingPosition.y;
-    moveWindow(mouseX, mouseY);
-
-}
-//on click and drag of the header for the muscle graphs, move the muscle graph to x and y
-function moveWindow(x, y){
-    muscleGraphWindow.style.top = y;
-    muscleGraphWindow.style.left = x;
+    //muscleGraphWindow.classList.add( "hidden");
 }
 
 /**
@@ -83,18 +133,16 @@ function moveWindow(x, y){
  */
 function setUpMuscleGraphEvents(){
     muscleGraphWindow = document.getElementById("muscleGraphWindow");
+    let header = document.getElementById("muscleGraphWindowHeader");
+    let closeButton = document.getElementById('graphHeaderClose');
+
+    muscleMiniWindow = new MinatureWindow(muscleGraphWindow);
+
+    muscleMiniWindow.addMoveEvent(header);
+    muscleMiniWindow.addCloseEvent(closeButton, closeMuscleGraphWindow);
+
     muscleCanvases = [];
     for(let graph of document.getElementsByClassName('muscleGraph')){
         muscleCanvases.push(graph);
     }
-
-    let header = document.getElementById("muscleGraphWindowHeader");
-    header.addEventListener("mousedown", headerClicked);
-
-    muscleGraphClosed = muscleGraphWindow.classList.contains("hidden");
-    
-    let closeButton = document.getElementById('graphHeaderClose');
-    closeButton.addEventListener("click", closeMuscleGraphWindow);
-    
-
 }

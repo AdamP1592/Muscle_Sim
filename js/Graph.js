@@ -620,7 +620,6 @@ function isWithinRect(graphingX, graphingY, rect, positioning="centered"){
     bottomSide -= heightDisplacement;
 
   }
-
   return (graphingX > leftSide && graphingX < rightSide) && (graphingY > topSide  && graphingY < bottomSide)
 }
 

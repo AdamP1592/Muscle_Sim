@@ -1,0 +1,16 @@
+#configureMuscleMenu{
+    width:300px;
+    height:auto;
+    background-color: rgb(80, 175, 80);
+    padding-top:5px;
+    padding-bottom:5px;
+}
+.muscleActivationButton{
+    width:100%;
+}
+#activationWrapper{
+    display:flex;
+    flex-wrap:nowrap;
+    
+
+}
