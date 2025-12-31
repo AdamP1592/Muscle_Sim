@@ -19,6 +19,8 @@ var pauseStartTime = 0;
 var mouseHoverX = 0;
 var mouseHoverY = 0;
 
+var currentCursor = "";
+
 //for property view
 var propView = null;
 
@@ -263,15 +265,13 @@ function checkHoverEvent(event){
       withinRect = true;
       if(inspection === true){
         displayProperties(index, obj);
-      }else if(trash === true){
-
+      }else if(configure === true){
+        
       }else if(move === true){
         if(sim.connections.forwardGet(index) !== undefined){
-          
           canvas.style.cursor = "not-allowed";
         }else{
           assignMoveOnClick = true;
-
           canvas.style.cursor = "grabbing";
           //some function that allows a person to click the rect, which attaches the rect to the cursor
         }
@@ -288,8 +288,8 @@ function checkHoverEvent(event){
     }
   }
   // disable cursor not-allowed if you are no longer hovering over an element you can't move
-  if(!withinRect && move){
-    canvas.style.cursor = "";
+  if(!withinRect){
+    canvas.style.cursor = currentCursor;
   }
 }
 /**
@@ -314,24 +314,30 @@ function clearAllControlBools(){
   move = false;
   configure = false;
   canvas.style.cursor = ""; 
+  currentCursor = "";
 }
 function inspectionClicked(event){
   checkboxClicked(event);
   inspection = event.target.checked;
   canvas.style.cursor =  inspection? "help": ""; 
+  currentCursor = canvas.style.cursor;
 }
 function deleteClicked(event){
   checkboxClicked(event);
   trash = event.target.checked;
+  currentCursor = "";
 }
 function moveClicked(event){
   checkboxClicked(event);
   move = event.target.checked;
   canvas.style.cursor = move? "grab": "";
+  currentCursor = canvas.style.cursor;
 }
 function configureClicked(event){
   checkboxClicked(event);
-  configure = event.target.checked;;
+  configure = event.target.checked;
+  canvas.style.cursor = configure? "alias": "";
+  currentCursor = canvas.style.cursor;
 }
 
 function checkboxClicked(e){
@@ -392,6 +398,7 @@ function setupInteractionEvents(){
   let pauseButton = document.getElementById("pausePlay")
   pauseButton.addEventListener("click", pauseButtonClicked);
 
+  configWindowSetup();
   setUpMuscleGraphEvents();
 
 }
