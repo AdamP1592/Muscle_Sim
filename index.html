@@ -93,16 +93,23 @@
             </div>
         </div>
         
-        <div id = "configureMuscleWindow" class = "absolutePos minatureWindow">
+        <div id = "configureMuscleWindow" class = "absolutePos minatureWindow hidden">
             <div id = "configureWindowHeader" class = "miniWindowHeader">
                 <button id = "configureWindowClose" class = "miniWindowClose">&#10060;&#xfe0e;</button>
 
             </div>
             <div id = "activationWrapper">
                 <button name="muscleActivationButton" id="sinActivation" class="muscleActivationButton">Sin</button>
-                <button name="muscleActivationButton" id="squreActivation" class="muscleActivationButton">Square</button>
-                <button name="muscleActivationButton" id="sinActivation" class="muscleActivationButton">Constant</button>
-                <button name="muscleActivationButton" id="sinActivation" class="muscleActivationButton">None</button>
+                <button name="muscleActivationButton" id="squareActivation" class="muscleActivationButton">Square</button>
+                <button name="muscleActivationButton" id="constActivation" class="muscleActivationButton">Constant</button>
+                <button name="muscleActivationButton" id="noneActivation" class="muscleActivationButton">None</button>
+
+            </div>
+            <div id = "activationParameterWrapper" class = "hidden">
+                <span id = "frequencyLabel">Frequency: </span>
+                <input type="number" id="activationFreq" value = "">
+                <button id="submitFreq">Submit</button>
+                
             </div>
         </div>
         <div id="propertyView" class = "hidden absolutePos"></div>

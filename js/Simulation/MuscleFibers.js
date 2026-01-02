@@ -139,9 +139,9 @@ class SkeletalFiber{
     * @param {string} stimulationType
     */
     setStimulation(t, stimulationType, freq = 150){
+        //console.log("setting stimulation in muscle", t, stimulationType, freq)
         //gets the requested stim type
         stimulationType = stimulationType.toLowerCase()
-        
         //sets new parameters
         this.activationObj.startNew(t, freq, stimulationType);
         
@@ -243,10 +243,16 @@ class SkeletalFiber{
     mobility(psiPrime, driving_force){
         let sigma_minus_sigma_t = psiPrime - this.sigma_t
         let m_sig = this.mSigma(sigma_minus_sigma_t)
+
+        // prevent m_sig from becoming stagnating and locking mobility at 0
+        if(m_sig === 0){
+            m_sig = 1e-2;
+        }
         let ma = this.m_a(driving_force)
         let mobility = this.mBar * m_sig * ma;
-        /*
-        console.log(`
+
+        //console.log(mobility, this.mBar, m_sig, ma, this.x, this.x_r)
+        /*console.log(`
             Mobility: ${mobility}
             sigma(aka psiPrime): ${psiPrime}
             simga_t: ${this.sigma_t}
@@ -282,7 +288,6 @@ class SkeletalFiber{
         let drivingForce = this.activation - lambdaR * _e;
 
         let m = this.mobility(psiPrime, drivingForce);
-
         
 
         //debug
@@ -291,6 +296,8 @@ class SkeletalFiber{
         let m_sigma = 0.5 * this.erfc(erfc_arg);*/
         //update xr
         let dxr_dt = this.x_r * m * drivingForce;
+
+
         //console.log(`resting length: ${this.x_r}, length ${this.x}`)
         this.x_r += dxr_dt * dt;
         /*console.log(`

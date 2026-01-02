@@ -11,14 +11,15 @@ class Activation{
             "const": this.activateConstant.bind(this),
             "none":this.activateNone.bind(this)
         }
+        this.changeType("none");
     }
     start(t){
         this.t_on = t;
     }
     changeType(type){
-        
-
+        console.log("Changing activation type to:", type)
         if(this.types[type]){
+            console.log("Type exists")
             this.type = type;
             this.currentActivationFunction = this.types[type];
         }

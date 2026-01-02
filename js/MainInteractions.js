@@ -141,9 +141,8 @@ function leftClickCanvas(event) {
   }
 }
 function viewMuscleProperties(event){
-  let muscleButton = event.target;
   let muscleKey = Number(event.target.value);
-
+  configWindow.openWindow()
   focusedElementIndex = muscleKey;
 
   sim.clearElementBorders();
@@ -206,6 +205,7 @@ function displayProperties(index, obj){
 
   let muscleIndicesSet = sim.connections.forwardGet(index);
 
+  //3 buttons fit per line. So modifier at line 0 is 3
   let modifier = ((muscleIndicesSet.size > 3) + 3);
   //0.75 accounts for line spacing changing it's size as the text gets bigger
   let height = (PropertyViewFontSize * len) + (PropertyViewFontSize * (muscleIndicesSet.size + 2) / modifier) + (0.75 *  len) + (1.0 * muscleIndicesSet.size);
@@ -246,7 +246,8 @@ function displayProperties(index, obj){
 
 function moveObject(object, cursorX, cursorY){
   let [graphX, graphY] = mainGraph.clientCoordsToGraphing(cursorX, cursorY);
-
+  object.x = graphX;
+  object.y = graphY;
 
 }
 function checkHoverEvent(event){

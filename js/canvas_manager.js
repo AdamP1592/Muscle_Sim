@@ -104,7 +104,7 @@ function drawObjects(){
 // default is for the main graph but optional for the grid
 function draw(currentTime){
   const fps = 60;
-  const dt = 0.0005
+  const dt = 0.0005;
   let elapsedTime = currentTime - lastFrameTime;
   //dt is 1ms, there are 30 fps, elapsed time is 
   if(!isPaused){
@@ -193,7 +193,7 @@ function resizeCanvas(){
 window.addEventListener("load", function() {
   sim = new PhysicsSim();
   // run some demo
-  demo1();
+  delayedMuscleActivationDemo();
 
   defaultScrollX = window.scrollX;
   defaultScrollY = window.scrollY;

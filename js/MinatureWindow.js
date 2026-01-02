@@ -21,6 +21,8 @@ class MinatureWindow{
         this.closeWindow = this.closeWindow.bind(this);
         this.openWindow = this.openWindow.bind(this);
 
+        this.secondaryCloseEvent = () => {};
+
 
         this.closed = miniWindow.classList.contains("hidden");
     }
@@ -36,15 +38,14 @@ class MinatureWindow{
      * @param {function} secondaryEvent 
      */
     addCloseEvent(closeButton, secondaryEvent = null){
-
+    
         closeButton.addEventListener("click", this.closeWindow);
         if(typeof secondaryEvent === 'function'){
-            closeButton.addEventListener("click", secondaryEvent);
+            this.secondaryCloseEvent = secondaryEvent;
         }
     }
     /*--------HELPER FUNCTIONS--------*/
     convertEventCoordsToClickedCoords(clientX, clientY){
-        console.log(clientX, clientY)
         const rect = this.miniWindow.getBoundingClientRect();
         let x = clientX - rect.left;
         let y = clientY - rect.top;
@@ -98,10 +99,11 @@ class MinatureWindow{
 
     closeWindow(){
         this.windowClosed = false;
-        this.miniWindow.classList.add("hidden");
+        if(!this.miniWindow.classList.contains("hidden")) this.miniWindow.classList.add("hidden");
+        this.secondaryCloseEvent();
     }
     openWindow(){
         this.windowClosed = true;
-        this.miniWindow.classList.remove("hidden");
+        if(this.miniWindow.classList.contains("hidden")) this.miniWindow.classList.remove("hidden");
     }
 }

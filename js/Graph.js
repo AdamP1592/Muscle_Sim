@@ -33,7 +33,6 @@ class Graph{
 
     this.gridSpacing = 0;
     this.numGridLines = numGridLines;
-    console.log(rawFontSize)
     this.updateCanvasBoundingRect();
     this.setFontSize(rawFontSize);
     this.gridBounds = this.getGridBounds()
@@ -99,7 +98,6 @@ class Graph{
 
       this.fontWidth = Math.max(widthY1, widthY2);
     */
-    console.log(this.fontSize)
     this.gridNumberingMarginLeft = this.fontSize;
 
     //for maintaining aspect ratio: = fontWidth. For reducing unused space: this.fontSize

@@ -64,8 +64,9 @@ class PhysicsSim{
         }  
         
         let newMuscle = new SkeletalMuscle(index1, index2, obj1.x, obj1.y, obj2.x, obj2.y);
-        let newMuscleIndex = this.#forceAddingElements.push(newMuscle);
 
+        let newMuscleIndex = this.#forceAddingElements.push(newMuscle);
+        
         this.connections.put(index1, newMuscleIndex);
         this.connections.put(index2, newMuscleIndex);
 
@@ -139,8 +140,12 @@ class PhysicsSim{
         }
     }
 
-    setStimulation(elementIndex, type, freq, offset=0){
-        console.log(elementIndex)
+    setStimulation(elementIndex, type, freq, offset=-1){
+
+        if(offset === -1){
+            offset = this.t
+        }
+        console.log(`Setting Stimulation for element${elementIndex}, type: ${type}, freq: ${freq}, startTime:${offset}`)
         this.#forceAddingElements.get(elementIndex).muscle.setStimulation(offset, type, freq);
     }
     getElement(index){
