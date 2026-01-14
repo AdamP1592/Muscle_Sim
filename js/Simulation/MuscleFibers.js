@@ -157,6 +157,7 @@ class SkeletalFiber{
     setMBar(force){
         let mb = 8.01869 * Math.pow(0.633738, force) + 0.599493
         this.mBar = Math.max(Math.min(4.5, mb), 0.6);
+        //this.mBar = 4.5
         return true;
     }
     /**
@@ -170,7 +171,8 @@ class SkeletalFiber{
     setABar(force){
         let ab = 27.41952 * Math.pow(0.95465, force) - 27.78085;
         this.aBar = Math.max(Math.min(-2.3, ab), -17.53);
-        //this.aBar = -27.53
+        //this.aBar = -17.53
+        
         return true;
     }
     /**
@@ -193,8 +195,8 @@ class SkeletalFiber{
         //console.log(this.delta_sigma)
         let arg = (this.delta_sigma - sigma_minus_sigma_t) / (Math.sqrt(2) * this.delta_sigma)
         //console.log('mSigma called; local arg =', arg);
-        let erfcResult = this.erfc(arg)
-        var m_sigma = 0.5 * erfcResult
+        let erfcResult = this.erfc(arg);
+        var m_sigma = 0.5 * erfcResult;
         /*
         console.log("erfc result = (delta_sigma - sigma_minus_sigma_t )/ sqrt(2) * delta_sigma");
         console.log(`${erfcResult} = efrc(${this.delta_sigma - sigma_minus_sigma_t} / (${Math.sqrt(2) * this.delta_sigma}))`)
@@ -209,14 +211,19 @@ class SkeletalFiber{
         //shortening
         let term1_xr = 0.5 * this.erfc((xr - (this.x_ref - this.delta_x)) / (Math.sqrt(2) * this.delta_x / 2));
         let term1_a = 0.5 * this.erfc(-driving_force / (Math.sqrt(2) * this.delta_a));
-        let term1 = term1_xr * term1_a;
+        const term1 = term1_xr * term1_a;
         
         //lengthening
         let term2_xr = 0.5 * this.erfc((-xr + (this.xrMin + this.delta_x)) / (Math.sqrt(2) * this.delta_x / 2));
         let term2_a = 0.5 * this.erfc(driving_force / (Math.sqrt(2) * this.delta_a));
-        let term2 = term2_xr * term2_a;
+        const term2 = term2_xr * term2_a;
+
+        const output = term1 + term2;
+
+        //console.log(output, driving_force);
+        
     
-        return term1 + term2;
+        return output
     }
     PsiR(lambdaE){
         let le = lambdaE
@@ -245,13 +252,15 @@ class SkeletalFiber{
         let m_sig = this.mSigma(sigma_minus_sigma_t)
 
         // prevent m_sig from becoming stagnating and locking mobility at 0
-        if(m_sig === 0){
+        if(m_sig < 1e-10 && this.activation !== 0){
             m_sig = 1e-2;
         }
         let ma = this.m_a(driving_force)
         let mobility = this.mBar * m_sig * ma;
 
-        //console.log(mobility, this.mBar, m_sig, ma, this.x, this.x_r)
+        
+        
+        //console.log(mobility, this.mBar, m_sig, ma, this.x, this.x_r, driving_force)
         /*console.log(`
             Mobility: ${mobility}
             sigma(aka psiPrime): ${psiPrime}
@@ -281,14 +290,11 @@ class SkeletalFiber{
         let psiR = this.PsiR(lambdaE);
         let psiPrime = this.PsiPrime(lambdaE);
 
-        this.setMBar(this.previousForce);
-        this.setABar(this.previousForce);
         let _e = this.e(lambdaE, psiR, psiPrime);
         
         let drivingForce = this.activation - lambdaR * _e;
 
         let m = this.mobility(psiPrime, drivingForce);
-        
 
         //debug
         /*let sigma_minus_sigma_t = psiPrime - this.sigma_t
@@ -296,10 +302,15 @@ class SkeletalFiber{
         let m_sigma = 0.5 * this.erfc(erfc_arg);*/
         //update xr
         let dxr_dt = this.x_r * m * drivingForce;
-
+        
+        
 
         //console.log(`resting length: ${this.x_r}, length ${this.x}`)
         this.x_r += dxr_dt * dt;
+
+        //if xr is a whole number subtract 1e-9
+      
+
         /*console.log(`
             dt = ${dt}
             sigma = ${psiPrime.toFixed(6)}
@@ -314,10 +325,22 @@ class SkeletalFiber{
         //clamped between max and min lengt
         this.x_r = Math.max(this.xrMin, Math.min(this.x_r, this.x_ref));
         
-        let force = this.PsiPrime(this.LambdaE)
-        this.previousForce = force;
+        let newLambdaE = this.LambdaE;
+
+        let force = this.PsiPrime(newLambdaE)
+        //console.log(m, drivingForce, this.x_r, this.LambdaE, dxr_dt)
+
+        //for the next iteration set mbar and abar equal to the tension
+
+        //this.previousForce = force;
         //console.log("Final Force: ", force)
-        
+
+        //if the length is less than rest, the object is freely moving since muscles cant really compress.(a mass of muscle can compress along it's width, but only because it lengthens the muscle.)
+        if(newLambdaE < 1){
+            force = 0;
+        }
+        this.setMBar(force);
+        this.setABar(force);
         return force;
     }
     updateLength(newLength){

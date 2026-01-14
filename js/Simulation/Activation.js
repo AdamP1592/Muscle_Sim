@@ -22,6 +22,7 @@ class Activation{
             console.log("Type exists")
             this.type = type;
             this.currentActivationFunction = this.types[type];
+            console.log(type, this.f)
         }
     }
     startNew(t, f, type="none"){
@@ -41,7 +42,8 @@ class Activation{
     }
     activateSquare(t){
         let wave = this.activateSin(t);
-        return Number(wave > 0);
+        //since sine wave is between 0 and 1, half the sin wave is 0.5
+        return Number(wave > 0.5);
     }
     activateConstant(t){
         return 1;
