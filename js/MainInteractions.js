@@ -160,7 +160,7 @@ function viewMuscleProperties(event){
   for(let muscleCanvas of muscleCanvases){
     let xLabel = "Time(s)";
     let yLabel = "";
-    let data = new ScrollingMap(0)
+    let data = new ScrollingMap(0);
 
     let graphObject = {};
     switch(muscleCanvas.id){
@@ -183,6 +183,7 @@ function viewMuscleProperties(event){
     graphObject.data = data;
     graphObject.graph = graph;
     graph.drawLineGraph(data, true);
+
     muscleGraphs.push(graphObject)
   }
 
