@@ -4,8 +4,8 @@ class PhysicsObject{
         this.y = y;
         this.mass = mass;
 
-        this.kineticFrictionConstant = 0.4;
-        this.staticFrictionConstant = 0.5;
+        this.kineticFrictionConstant = 0.5;
+        this.staticFrictionConstant = 0.6;
 
         //total current velocity
         this.velocityX = 0;

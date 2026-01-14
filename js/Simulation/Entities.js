@@ -127,6 +127,7 @@ class Muscle{
         this.forceData = new ScrollingMap(NumberOfDatapoints);
         this.activationData = new ScrollingMap(NumberOfDatapoints);
         this.lengthData = new ScrollingMap(NumberOfDatapoints);
+        this.restingLengthData = new ScrollingMap(NumberOfDatapoints);
     }
     /**
      * A general helper function to compute euclidean distance given two points
@@ -275,8 +276,9 @@ class SkeletalMuscle extends Muscle{
         if(currentStepCount % SAMPLING_INTERVAL === 0){
             this.forceData.push(t, force);
             //since abar is negative activation is negative, to make the visualization nice just invert the sign
-            this.activationData.push(t, - this.muscle.activation);
+            this.activationData.push(t, this.muscle.activationObj.activate(t));
             this.lengthData.push(t, length)
+            this.restingLengthData.push(t, this.muscle.x_r);
         }
 
 

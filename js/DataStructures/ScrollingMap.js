@@ -8,6 +8,10 @@ class ScrollingMap{
         this.#scrollingMap = new Map();
         this.maxSize = maxSize;
     }
+    
+    get size(){
+        return this.#scrollingMap.size
+    }
     /**
      * Core function. Limits the size of the map to maxSize while allowing you
      * to push key->value pairs to the map

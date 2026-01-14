@@ -36,8 +36,8 @@ class PhysicsSim{
     createMoveableSquare(x, y){
         let width = 8;
         let height = 8;
-        //0.01 g
-        let mass = 0.1;
+        //0.75 g
+        let mass = 0.15;
         let rect = new MoveableRect(width, height, x, y, mass)
         this.#objects.push(rect)
     }
