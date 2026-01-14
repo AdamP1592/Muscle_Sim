@@ -151,6 +151,32 @@ class Graph{
         this.xMax = Math.max(time, this.xMax);
         this.yMax = Math.max(value, this.yMax);
       }
+
+      
+      // if the xrange is 0 or the y range is zero space the min and max out by 0.1%;
+      if(this.xMin === this.xMax){
+
+        
+        //console.log("xrange is zero")
+        this.xMin *= 0.5;
+        this.xMax *= 1.5;
+
+        //if the value of xmin is zero that means the range is still zero, so change it to -1 to 1
+        if(this.xMin === 0){
+          this.xMin = -0.5;
+          this.xMax = 0.5;
+        }
+      }
+      if(this.yMin === this.yMax){
+        //console.log("yrange is zero")
+        this.yMin *= 0.5;
+        this.yMax *= 1.5;
+        //if the value of ymin is zero that means the range is still zero, so change it to -1 to 1
+        if(this.yMin === 0){
+          this.yMin = -0.5;
+          this.yMax = 0.5;
+        }
+      }
       this.setGridSpacing();
 
 
@@ -363,24 +389,26 @@ class Graph{
    * @param {ScrollingMap} pointsMap
    * @param {Boolean} resize 
    */
-  drawDotPlot(pointsMap, resize = false){
+  drawDotPlot(pointsMap, resize = false, clearGraph = true){
     if(resize === true){
       this.updateMinMax(pointsMap)
     }
-    this.clearGraph();
+    if(clearGraph) this.clearGraph();
+
     for(let [time, value] of pointsMap){
       let[canvasX, canvasY] = this.graphToCanvasCoords(time, value);
       this.drawFilledCircle(canvasX, canvasY, 3);
     }
     this.drawGrid();
   }
-  drawLineGraph(pointsMap, resize = false, drawPoints = false){
+  drawLineGraph(pointsMap, resize = false, drawPoints = false, clearGraph = true){
     let radius = 3;
     if(resize === true){
       this.updateMinMax(pointsMap)
     }
-    this.clearGraph();
+    if(clearGraph) this.clearGraph();
     let previousPoint = null;
+    //console.log(pointsMap);
     for(let [key, value] of pointsMap){
         let [xCanvas, yCanvas] = this.graphToCanvasCoords(key, value)
 
@@ -413,6 +441,7 @@ class Graph{
    * Draws the grid on the canvas without chaning canvas styling.
    */
   drawGrid(){
+    //console.log(this.gridSpacingX, this.gridSpacingY);
     this.ctx.beginPath();
 
     this.ctx.save();
