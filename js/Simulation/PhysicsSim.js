@@ -151,4 +151,36 @@ class PhysicsSim{
     getElement(index){
         return this.#forceAddingElements.get(index)
     }
+    getState(){
+        var stateJson = {};
+        let existingMuscles = this.#forceAddingElements.list;
+
+        //create each section
+        stateJson["muscles"] = {};
+        stateJson["objects"] = {};
+        
+        //for easy access to each section
+        let muscleMap = stateJson["muscles"];
+        let objectMap = stateJson["objects"]
+
+        //gets all existing muscles and their keys, and stores all variables of those muscles
+        for(let [index, existingMuscle] of this.#forceAddingElements){
+            let key = "muscle" + index;
+            //create muscle entry
+            muscleMap[key] = {};
+
+            //store type
+            muscleMap[key][]
+
+        }
+
+        let unusedMuscleIndices = this.#forceAddingElements.free;
+
+        let existingObjects = this.#objects.list;
+        let unusedObjects = this.#objects.free;
+
+    }
+    setState(){
+
+    }
 }

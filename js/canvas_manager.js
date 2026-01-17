@@ -13,6 +13,7 @@ var sim = null;
 var scalingFactor = null;
 var renderingScale = 1;
 var startTime = 0;
+var simStartTIme = 0;
 
 //for client bounding rect
 var canvasRect = null;

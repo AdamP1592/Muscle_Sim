@@ -109,9 +109,8 @@ class SkeletalFiber{
     constructor(initialLength, params){
 
         this.x = initialLength;
-        this.x_r = initialLength * 0.8;
-
         //to maintain the ratio from the paper of max length to length: * (12.8 / 11.5)
+        this.x_r = initialLength * 0.8;        
         this.x_ref = initialLength + 1e-6;
 
         this.kappa = params.kappa;
@@ -134,6 +133,23 @@ class SkeletalFiber{
 
         this.activationObj = new Activation(0, 0);
 
+    }
+    /**
+     * gets the state of the muscle stored in an object
+     */
+    get State(){
+        const state = {
+            "xrMin": this.xrMin,
+            "xRef": this.x_ref,
+            "xr": this.x_r,
+            "length": this.x,
+            "aBar": this.aBar,
+            "mBar": this.mBar,
+            "activation": this.activation,
+            "activationType": this.activationObj.type,
+            "freq": this.activationObj.freq,
+            "activationStartTime": this.activationObj.t_on
+        }
     }
     /**
     * @param {string} stimulationType
