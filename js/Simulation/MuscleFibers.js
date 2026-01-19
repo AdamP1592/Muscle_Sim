@@ -1,5 +1,7 @@
 //const { simpleLayout } = require("echarts/types/src/chart/graph/simpleLayoutHelper.js");
 
+//const { updateCenterAndZoom } = require("echarts/types/src/action/roamHelper.js");
+
 const fiber_const_map = {
     a: 65.06,
     b: 1.019,
@@ -134,10 +136,44 @@ class SkeletalFiber{
         this.activationObj = new Activation(0, 0);
 
     }
+    set state(stateObj){
+        var activationType = "none";
+        var activationFreq = 0;
+        var activationStartTime = 0;
+        const state = {
+            "xrMin": (thisObj, oldXRMin) => {thisObj.xrMin = oldXRMin},
+            "xRef": (thisObj, oldXRef) => {thisObj.x_ref = oldXRef},
+            "xr": (thisObj, oldXR) => {thisObj.x_r = oldXR},
+            "length": (thisObj, length) => {thisObj.x = length},
+            "aBar": (thisObj, oldABar) => {thisObj.aBar = oldABar},
+            "mBar": (thisObj, oldMBar) => {thisObj.mBar = oldMBar},
+            "activation": (thisObj, oldActivation) => {thisObj.activation = oldActivation},
+            "activationType": (thisObj, oldActivationType) => {activationType = oldActivationType},
+            "freq": (thisObj, oldFreq) => {activationFreq = oldFreq},
+            "activationStartTime": (thisObj, oldStartTime) => {activationStartTime = oldStartTime }
+        }
+
+        for(const [key, val] of Object.entries(stateObj)){
+            let setterFunction = state[key];
+            if(setterFunction !== undefined && val != undefined){
+                setterFunction(this, val);
+            }
+            else{
+                if(setterFunction === undefined){
+                    console.log(`Error: unidentifiable key ${key} when restoring old state`);
+                }else{
+                    console.log(`Error: restoration object stateObj stored undefined value for ${key}`);
+                }
+                
+            }
+        }
+
+        this.activationObj.startNew(activationStartTime, activationFreq, activationType);
+    }
     /**
      * gets the state of the muscle stored in an object
      */
-    get State(){
+    get state(){
         const state = {
             "xrMin": this.xrMin,
             "xRef": this.x_ref,
@@ -147,9 +183,25 @@ class SkeletalFiber{
             "mBar": this.mBar,
             "activation": this.activation,
             "activationType": this.activationObj.type,
-            "freq": this.activationObj.freq,
+            "freq": this.activationObj.f,
             "activationStartTime": this.activationObj.t_on
         }
+        return state;
+    }
+    set state(stateSerializationObject){
+        this.xrMin = stateSerializationObject["xrMin"];
+        this.x_ref = stateSerializationObject["xRef"];
+        this.x_r = stateSerializationObject["xr"];
+        this.x = stateSerializationObject["length"];
+        this.aBar = stateSerializationObject["aBar"];
+        this.mBar = stateSerializationObject["mBar"];
+        this.activation = stateSerializationObject["activation"];
+
+        let t_on = stateSerializationObject["activationStartTime"];
+        let freq = stateSerializationObject["freq"];
+        let activationType = stateSerializationObject["activationType"];
+
+        this.activationObj.startNew(t_on, freq, activationType);
     }
     /**
     * @param {string} stimulationType
@@ -237,7 +289,6 @@ class SkeletalFiber{
         const output = term1 + term2;
 
         //console.log(output, driving_force);
-        
     
         return output
     }
@@ -274,22 +325,6 @@ class SkeletalFiber{
         let ma = this.m_a(driving_force)
         let mobility = this.mBar * m_sig * ma;
 
-        
-        
-        //console.log(mobility, this.mBar, m_sig, ma, this.x, this.x_r, driving_force)
-        /*console.log(`
-            Mobility: ${mobility}
-            sigma(aka psiPrime): ${psiPrime}
-            simga_t: ${this.sigma_t}
-            delta_sigma:${this.delta_sigma}
-            m_sigma: ${m_sig}
-            drivingForce: ${driving_force}
-            ma: ${ma}
-            mbar: ${this.mBar}
-            delta_sigma: ${this.delta_sigma}
-            activation: ${this.activation}
-            `)
-        */
         //console.log(psiPrime, this.mBar, mobility, ma, this.activation)
         //console.log(` Sigma_minus_sigma_t: ${sigma_minus_sigma_t}\n m_sigma: ${m_sig}\n ma: ${ma}, psiPrime: ${psiPrime}, sigma_t: ${this.sigma_t}`)
         return mobility
@@ -312,45 +347,15 @@ class SkeletalFiber{
 
         let m = this.mobility(psiPrime, drivingForce);
 
-        //debug
-        /*let sigma_minus_sigma_t = psiPrime - this.sigma_t
-        let erfc_arg = (this.delta_sigma - sigma_minus_sigma_t) / (Math.sqrt(2) * this.delta_sigma);
-        let m_sigma = 0.5 * this.erfc(erfc_arg);*/
-        //update xr
         let dxr_dt = this.x_r * m * drivingForce;
         
-        
-
-        //console.log(`resting length: ${this.x_r}, length ${this.x}`)
         this.x_r += dxr_dt * dt;
-
-        //if xr is a whole number subtract 1e-9
-      
-
-        /*console.log(`
-            dt = ${dt}
-            sigma = ${psiPrime.toFixed(6)}
-            sigma_t = ${this.sigma_t}
-            sigma - sigma_t = ${sigma_minus_sigma_t}
-            erfc_arg = ${erfc_arg.toFixed(3)}
-            m_sigma = ${m_sigma.toFixed(6)}
-            x_r = ${this.x_r.toFixed(6)}
-        `);*/
-    
-        //console.log(`Step:\n lambda_e: ${lambdaE}\n lambda_r: ${lambdaR}\n ψ_r: ${psiR}\n ψ': ${psiPrime}\n e: ${_e}\n drivingForce: ${drivingForce}\n m: ${m}\n dxrdt: ${dxr_dt}\n xr: ${this.x_r}\n x:${this.x}\n e:${_e}\n activation: ${this.activation}`) 
-        //clamped between max and min lengt
+        //clamp xr to the min and max biologiclaly valid 
         this.x_r = Math.max(this.xrMin, Math.min(this.x_r, this.x_ref));
         
         let newLambdaE = this.LambdaE;
 
         let force = this.PsiPrime(newLambdaE)
-        //console.log(m, drivingForce, this.x_r, this.LambdaE, dxr_dt)
-
-        //for the next iteration set mbar and abar equal to the tension
-
-        //this.previousForce = force;
-        //console.log("Final Force: ", force)
-
         //if the length is less than rest, the object is freely moving since muscles cant really compress.(a mass of muscle can compress along it's width, but only because it lengthens the muscle.)
         if(newLambdaE < 1){
             force = 0;
@@ -365,11 +370,17 @@ class SkeletalFiber{
 }
 
 const params = {
-    delta_sigma: 1e-3,
+    kappa: 6,
+    sigma_t: 0,
+    delta_sigma: 1e-6,
     delta_x: 2e-5,
     delta_a: 8e-3,
-    crossSectionArea: 0.5,
-    kappa: 6,
-    activationFrequency: 50
+    //for future use for dynamically setting custom functions to define mbar and abar given force
+    aBar_base: 0.95465,
+    aBar_shift: 27.8085,
+    aBar_scaleFactor: 27.41952,
+    mBar_base:0.633738,
+    mBar_shift:0.599493,
+    mBar_scaleFactor:8.01869
 
 }
