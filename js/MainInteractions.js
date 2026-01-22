@@ -135,9 +135,9 @@ function leftClickCanvas(event) {
     for(const key in objectsWithBorders){
       let obj = objectsWithBorders[key]
       obj.border = false;
-      objects.push([Number(key), obj])
+      objects.push(Number(key))
     }
-    sim.createMuscle(objects[0][1], objects[1][1], objects[0][0], objects[1][0])
+    sim.createMuscle(objects[0], objects[1])
   }
 }
 function viewMuscleProperties(event){

@@ -136,59 +136,8 @@ class SkeletalFiber{
         this.activationObj = new Activation(0, 0);
 
     }
-    set state(stateObj){
-        var activationType = "none";
-        var activationFreq = 0;
-        var activationStartTime = 0;
-        const state = {
-            "xrMin": (thisObj, oldXRMin) => {thisObj.xrMin = oldXRMin},
-            "xRef": (thisObj, oldXRef) => {thisObj.x_ref = oldXRef},
-            "xr": (thisObj, oldXR) => {thisObj.x_r = oldXR},
-            "length": (thisObj, length) => {thisObj.x = length},
-            "aBar": (thisObj, oldABar) => {thisObj.aBar = oldABar},
-            "mBar": (thisObj, oldMBar) => {thisObj.mBar = oldMBar},
-            "activation": (thisObj, oldActivation) => {thisObj.activation = oldActivation},
-            "activationType": (thisObj, oldActivationType) => {activationType = oldActivationType},
-            "freq": (thisObj, oldFreq) => {activationFreq = oldFreq},
-            "activationStartTime": (thisObj, oldStartTime) => {activationStartTime = oldStartTime }
-        }
 
-        for(const [key, val] of Object.entries(stateObj)){
-            let setterFunction = state[key];
-            if(setterFunction !== undefined && val != undefined){
-                setterFunction(this, val);
-            }
-            else{
-                if(setterFunction === undefined){
-                    console.log(`Error: unidentifiable key ${key} when restoring old state`);
-                }else{
-                    console.log(`Error: restoration object stateObj stored undefined value for ${key}`);
-                }
-                
-            }
-        }
-
-        this.activationObj.startNew(activationStartTime, activationFreq, activationType);
-    }
-    /**
-     * gets the state of the muscle stored in an object
-     */
-    get state(){
-        const state = {
-            "xrMin": this.xrMin,
-            "xRef": this.x_ref,
-            "xr": this.x_r,
-            "length": this.x,
-            "aBar": this.aBar,
-            "mBar": this.mBar,
-            "activation": this.activation,
-            "activationType": this.activationObj.type,
-            "freq": this.activationObj.f,
-            "activationStartTime": this.activationObj.t_on
-        }
-        return state;
-    }
-    set state(stateSerializationObject){
+        set state(stateSerializationObject){
         this.xrMin = stateSerializationObject["xrMin"];
         this.x_ref = stateSerializationObject["xRef"];
         this.x_r = stateSerializationObject["xr"];
@@ -203,6 +152,7 @@ class SkeletalFiber{
 
         this.activationObj.startNew(t_on, freq, activationType);
     }
+      
     /**
     * @param {string} stimulationType
     */

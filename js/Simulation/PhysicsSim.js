@@ -8,6 +8,136 @@ class PhysicsSim{
         this.t = 0
         this.connections = new BiMap();
     }
+
+    get serialization(){
+        var serializationObj = {};
+        var serializationManager = new SerializationManager();
+        //entity and object internals
+        const desiredMoveableRectValues = new Set(["x", "y", "width", "height", "border", "componentForces"]);
+        const desiredFixedRectValues = new Set(["x", "y", "width", "height", "border"]);
+        
+        const desiredSkeletalMuscleValues = new Set(["index1", "index2", "t", "border"]);
+        
+        //Moveable object internals
+        const desiredPhysicsValues = new Set(["x", "y", "velocityX", "velocityY", "force_x", "force_y", "mass"]);
+                
+        //muscle model internal models
+        const desiredSkeletalFiberValues = new Set(["x", "x_r", "x_ref", "xrMin", "aBar","mBar", "activation"]);
+        const desiredActivationValues = new Set(["t_on", "f", "type"]);
+
+        //sim values desired
+
+        const desiredSimValues = new Set(["t"]);
+
+
+        const schemaMap = new Map([
+            ["MoveableRect", desiredMoveableRectValues],
+            ["Rect", desiredFixedRectValues],
+            ["SkeletalMuscle", desiredSkeletalMuscleValues],
+            ["PhysicsObject", desiredPhysicsValues],
+            ["SkeletalFiber", desiredSkeletalFiberValues],
+            ["Activation", desiredActivationValues],
+            ["PhysicsSim", desiredSimValues]
+        ]);
+
+        serializationObj["PhysicsSim"] = serializationManager.getDeepSerializationObject(this, schemaMap);
+        
+
+        for(let [key, muscleObject] of Object.entries(this.#forceAddingElements.getPlanObject("muscle"))){
+            if(muscleObject === null){
+                serializationObj[key] = null;
+                continue;
+            }
+            serializationObj[key] = serializationManager.getDeepSerializationObject(muscleObject, schemaMap);
+        }
+        for(let [key, object] of Object.entries(this.#objects.getPlanObject("obj"))){
+            if(object === null){
+                 serializationObj[key] = null;
+                 continue;
+            }
+            serializationObj[key] = serializationManager.getDeepSerializationObject(object, schemaMap);
+        }
+        let serializedJSON = JSON.stringify(serializationObj);
+
+        return serializedJSON
+    }
+    reverseSerialization(serializationJSON){
+        let serializationObject = JSON.parse(serializationJSON);
+        //since the objects and entities are stored privately, each object and entity is unpacked
+        //individually, same with the sim needs itself(currently just t)
+        
+        var serializationManager = new SerializationManager();
+
+        let physicsSimSerialization = serializationObject["PhysicsSim"];
+        
+        //unpack sim values
+        serializationManager.reverseSerialization(physicsSimSerialization, this);
+
+        const registry = {
+            "MoveableRect": MoveableRect,
+            "Rect": Rect,
+            "SkeletalMuscle": SkeletalMuscle,
+            "PhysicsObject": PhysicsObject,
+            "SkeletalFiber": SkeletalFiber,
+            "Activation": Activation
+        }
+
+        let objectIndicesToRemove = [];
+        let muscleIndicesToRemove = [];
+
+        for(let [key, serialization] of Object.entries(serializationObject)){
+            let objectName = key.slice(0, -1);
+            //sim already unpacked
+            if(key === "PhysicsSim"){
+                continue;
+            }
+            //if the serialization is null the object doesn't exist
+            if(serialization === null){
+                if(objectName === "obj"){
+                    objectIndicesToRemove.push(this.#objects.push(-1));
+                }else if(objectName === "muscle"){
+                    muscleIndicesToRemove.push(this.#forceAddingElements.push(-1));
+                }else{
+                    throw new Error(`Error: Unknown object type: ${objectName}`)
+                }
+                //skip everything else since this is null
+                continue;
+            }
+            
+            //get the obj that corresponds with the string
+            let type = serialization["ClassType"];
+            let obj = registry[type];
+            //if that obj doesn't exist throw an error
+            if(obj == null){
+                console.error(`Error: ${type} is not a given object type`);
+                continue
+            }
+
+            //initialize a new instance of the class
+            let initializedObject = new obj();
+            //reverse the serialization to change the obj into a copy of the serialization
+            serializationManager.reverseSerialization(serialization, initializedObject);
+            // things that should belong to objects are stored as obj{index}
+            if(objectName === "obj"){
+                this.#objects.push(initializedObject);
+            }else if(objectName === "muscle"){
+                let newMuscleIndex = this.#forceAddingElements.push(initializedObject);
+                this.connections.put(initializedObject.index1, newMuscleIndex);
+                this.connections.put(initializedObject.index2, newMuscleIndex);
+
+                //reset the activation object since the variables were just re-initialized
+                initializedObject.muscle.activationObj.restart();
+            }
+        }
+        for(let index of objectIndicesToRemove){
+            this.#objects.remove(index);
+        }
+        for(let index of muscleIndicesToRemove){
+            this.#forceAddingElements.remove(index);
+        }
+        
+    }
+
     /**
      * Creates a fixed square at the graphing coordinates
      * x and y
@@ -52,8 +182,9 @@ class PhysicsSim{
      * @param {int} index2 
      * @returns {bool} objectCreated
      */
-    createMuscle(obj1, obj2, index1, index2){
-
+    createMuscle(index1, index2){
+        let obj1 = this.#objects.get(index1);
+        let obj2 = this.#objects.get(index2);
         //prevent duplicates
         for(let [index, muscle] of this.#forceAddingElements){
             //index 1 and index 2 will always be in order of least to greatest
@@ -111,7 +242,7 @@ class PhysicsSim{
         let connectedElements = this.connections.forwardGet(objectIndex);
 
         //if there is nothing connected, nothing else is needed
-        if(connectedElements === null){
+        if(connectedElements == null){
             return
         }
 
@@ -151,36 +282,47 @@ class PhysicsSim{
     getElement(index){
         return this.#forceAddingElements.get(index)
     }
-    getState(){
-        var stateJson = {};
-        let existingMuscles = this.#forceAddingElements.list;
-
-        //create each section
-        stateJson["muscles"] = {};
-        stateJson["objects"] = {};
-        
-        //for easy access to each section
-        let muscleMap = stateJson["muscles"];
-        let objectMap = stateJson["objects"]
-
-        //gets all existing muscles and their keys, and stores all variables of those muscles
-        for(let [index, existingMuscle] of this.#forceAddingElements){
-            let key = "muscle" + index;
-            //create muscle entry
-            muscleMap[key] = {};
-
-            //store type
-            muscleMap[key][]
-
+    /**
+     * 
+     * @param {Object} stateJson 
+     * @returns 
+     */
+    #getAllMuscleStates(stateObject){
+        let serializedMuscles = this.#forceAddingElements.getSerialization("muscle");
+        for(let [key, muscleReference] of Object.entries(serializedMuscles)){
+            // convert all muscle references into serialized states
+            let referenceType = muscleReference.constructor.name
+            if(referenceType === "SkeletalMuscle"){
+                serializedMuscles[key] = muscleReference.state;
+            }else if(referenceType === "string"){
+                continue;
+            }else{
+                console.log(referenceType)
+                throw new Error(`Error: Unknown type ${referenceType} in muscle state serialization`);
+            }
         }
-
-        let unusedMuscleIndices = this.#forceAddingElements.free;
-
-        let existingObjects = this.#objects.list;
-        let unusedObjects = this.#objects.free;
+        return serializedMuscles;
 
     }
-    setState(){
 
+    //separate state serialization for extensibility in the future
+    #getAllObjectStates(){
+        let serializedObjects = this.#objects.getSerialization("object");
+        for(let [key, objectReference] of Object.entries(serializedObjects)){
+            let referenceType = objectReference.constructor.name
+            if(referenceType === "Rect" || referenceType === "MoveableRect"){
+                serializedObjects[key] = objectReference.state;
+            }else if(referenceType === "string"){
+                //any string points to a string with the text null in a free list
+                continue;
+            }else{
+                //console.log(referenceType)
+                throw new Error(`Error: unknown type ${referenceType} in object state serialization`);
+            }
+        }
+        return serializedObjects;
     }
+
+
 }
+

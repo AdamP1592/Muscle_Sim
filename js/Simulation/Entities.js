@@ -35,7 +35,6 @@ class Obj{
         this.borderColor = '#c21212ff';
         this.border = false;
         this.borderSize = 3;
-        this.muscles = []
     }
     getObjectInfo(){
         return {x: this.x,
@@ -76,6 +75,7 @@ class MoveableObj extends Obj{
 
         return objInfo
     }
+
 }
 
 
@@ -111,7 +111,6 @@ class MoveableRect extends Rect{
 
         this.color = '#f1ff74ff'
         this.componentForces = [0, 0];
-
     }
 }
 class Muscle{

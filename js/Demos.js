@@ -22,7 +22,7 @@ function demo1(){
   // stimulation cycle
   for(let i = 1; i <= numFixed; i++){
     console.log(`Creating muscle connecting(0, ${i})`)
-    sim.createMuscle(sim.objects.get(0), sim.objects.get(i), 0, i)
+    sim.createMuscle(0, i)
 
     let shift = ((i - 1) / numFixed) * (1/freq);
     //sim.forceAddingElements.get(i - 1).muscle.setStimulation(shift, "sin", freq)
@@ -71,7 +71,7 @@ function stressTest(){
       if(n >= 1){
 
         const simObjects = sim.objects;
-        sim.createMuscle(simObjects.get(n-1), simObjects.get(n), n - 1, n);
+        sim.createMuscle(n - 1, n);
         sim.setStimulation(muscleCount, 'sin', 2, offset=0)
         muscleCount++;
       }
@@ -83,7 +83,7 @@ function delayedMuscleActivationDemo(){
 
   sim.createFixedSquare(50, 50);
   sim.createMoveableSquare(100, 50);
-  sim.createMuscle(sim.objects.get(0), sim.objects.get(1), 0, 1);
+  sim.createMuscle(0, 1);
   for(let i = 0; i < 1000; i++){
     sim.step(0.0005)
   }
