@@ -66,7 +66,22 @@ class FreeList{
             }
         }
     }
-
+    /**
+     * takes in an identifier and then stores the whole data structure in a serialized object format
+     * @param {String} identifier 
+     */
+    getPlanObject(identifier){
+        let output = {};
+        for(let i = 0; i < this.list.length; i++){
+            if(this.list[i] !== null){
+                output[identifier + i] = this.list[i];
+            }else{
+                output[identifier + i] = null;
+            }
+        }
+        return output;
+    }
+    // SINCE OBJECTS STORED CAN BE ANY TIME UNPACKING A SERIALIZATION MUST BE DONE OUTSIDE THE OBJECT
 }
 
 function freeListTest(){
