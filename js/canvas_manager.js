@@ -192,9 +192,33 @@ function resizeCanvas(){
   });
 
 window.addEventListener("load", function() {
+
+  //testSerializationInversion();
+
+  testSimSerialization();
   sim = new PhysicsSim();
+  /*
+    This will get replaced with two different functions:
+    
+    For conetext, when a user connects initializes a sim via the nodejs api, it will store a simID.
+    Client side that will get stored as an httponly cookie. If the create call passes the httponly cookie
+    the server will return the sim with that ID if it exists, and if it does't it will return an error.
+
+    What's needed:
+
+    1. on return of an error, create a new sim, pass the initial sim state to the server for creation.
+
+    2. on return of a json containing the sim state, generate a new sim based on the stored variables.
+
+    then perform the game loop.
+
+
+  */
+
   // run some demo
   delayedMuscleActivationDemo();
+
+  
 
   defaultScrollX = window.scrollX;
   defaultScrollY = window.scrollY;

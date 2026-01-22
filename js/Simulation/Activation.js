@@ -16,13 +16,16 @@ class Activation{
     start(t){
         this.t_on = t;
     }
+    restart(){
+        this.currentActivationFunction = this.types[this.type];
+    }
     changeType(type){
-        console.log("Changing activation type to:", type)
+        //console.log("Changing activation type to:", type)
         if(this.types[type]){
-            console.log("Type exists")
+            //console.log("Type exists")
             this.type = type;
             this.currentActivationFunction = this.types[type];
-            console.log(type, this.f)
+            //console.log(type, this.f)
         }
     }
     startNew(t, f, type="none"){

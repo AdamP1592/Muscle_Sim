@@ -45,7 +45,9 @@ class SerializationManager{
      */
     getDeepSerializationObject(classInstance, serializationSchemas){
         this.#checkSchemas(serializationSchemas);
-        return this.#getDeepSerializationObject(classInstance, serializationSchemas);
+        let serializationObject = this.#getDeepSerializationObject(classInstance, serializationSchemas);
+
+        return serializationObject;
     }
 
 
@@ -58,7 +60,8 @@ class SerializationManager{
     #getDeepSerializationObject(classInstance, serializationSchemas){
         let currentClassName = classInstance.constructor.name;
         let currentSchema = serializationSchemas.get(currentClassName);
-        let output = {}
+
+        let output = {};
 
         this.#checkSchema(currentSchema);
         //If there is nothing to look for
@@ -68,7 +71,9 @@ class SerializationManager{
         //iterate through all given variables of this class, if one of the variables
         //points to a class 
 
+
         for(let [variableName, variableValue] of Object.entries(classInstance)){
+
             let variableType = variableValue.constructor.name
             // if there is a serialization independent from the current schema, it's an object
             if(serializationSchemas.has(variableType)){
@@ -95,18 +100,20 @@ class SerializationManager{
                 output[variableName] = variableValue;
             }
         }
-        return output;
-    }
-    reverseSerialization(serializedObject, newInstance){
-        // basically I want to take the serialized object and apply all values in the map to the corresponding
-        // values in the new instance
-        this.#reverseSerialization(serializedObject, newInstance);
+        let outputWrapper = {"ClassType": currentClassName, ...output};
+        return outputWrapper
     }
     /**
      *  
      * @param {Object} serializedObject 
      * @param {Map<String, Object>} objectMap
      */
+    reverseSerialization(serializedObject, newInstance){
+        // basically I want to take the serialized object and apply all values in the map to the corresponding
+        // values in the new instance
+        this.#reverseSerialization(serializedObject, newInstance);
+    }
+
     #reverseSerialization(serializedObject, newInstance){
         // since the serializedObject is constructed internally, the object structure should accurately mirror eachother.
 
@@ -116,11 +123,19 @@ class SerializationManager{
 
             // since this a reconstruction, all i need to do is check if the variable points to an object
             // if it does set the object equal to the reconstruction of the object
+            if(variableName === "ClassType"){
+                //check if the class tpyes match, if they do the schema is valid
+                const objectClassName = newInstance.constructor.name
+                if(objectClassName !== value){
+                    throw new TypeError(`Error in schema: type ${value} in schema does not match type ${objectClassName}`)
+                }
+                continue;
+            }
             if(typeof value == "object"){
-                console.log(variableName + " is object");
+                //console.log(variableName + " is object");
                 this.#reverseSerialization(serializedObject[variableName], newInstance[variableName]);
             }else{
-                console.log(`Copying ${variableName} = ${value} from serialization to instance`)
+                //console.log(`Copying ${variableName} = ${value} from serialization to instance`)
                 // if it's not an object, restore it's value
                 newInstance[variableName] = value;
             }
