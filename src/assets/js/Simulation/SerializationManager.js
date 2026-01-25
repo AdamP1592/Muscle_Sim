@@ -3,10 +3,10 @@ class SerializationManager{
     /*------------Checks------------*/
     #checkSchemas(serializationSchemas){
         if(!(serializationSchemas instanceof Map)){
-            throw new Error("Error: serializationSchema must be a Map");
+            throw new Error("serializationSchema must be a Map");
         }
         if(serializationSchemas.size === 0){
-            throw new Error("Error: cannot serialize without schema");
+            throw new Error("cannot serialize without schema");
         }
         return true;
     }
@@ -15,7 +15,7 @@ class SerializationManager{
             throw new Error(`Error: undefined schema for ${currentClassName}`)
         }
         if(!(serializationSchemaSet instanceof Set)){
-            throw new Error(`TypeError: serializationSchema for Object ${currentClassName} is not a set`);
+            throw new TypeError(`serializationSchema for Object ${currentClassName} is not a set`);
         }
         return true;
     }

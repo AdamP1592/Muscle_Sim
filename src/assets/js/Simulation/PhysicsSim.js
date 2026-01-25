@@ -1,4 +1,7 @@
+//const { SeriesData } = require("echarts/types/dist/shared");
+
 class PhysicsSim{
+
     #objects
     #forceAddingElements
     constructor(){
@@ -7,12 +10,10 @@ class PhysicsSim{
         this.#objects = new FreeList()
         this.t = 0
         this.connections = new BiMap();
+        this.serializationManager = new SerializationManager();
     }
-
-    get serialization(){
-        var serializationObj = {};
-        var serializationManager = new SerializationManager();
-        //entity and object internals
+    // Builds the schema map for the auto serializer
+    static{
         const desiredMoveableRectValues = new Set(["x", "y", "width", "height", "border", "componentForces"]);
         const desiredFixedRectValues = new Set(["x", "y", "width", "height", "border"]);
         
@@ -26,11 +27,9 @@ class PhysicsSim{
         const desiredActivationValues = new Set(["t_on", "f", "type"]);
 
         //sim values desired
-
         const desiredSimValues = new Set(["t"]);
-
-
-        const schemaMap = new Map([
+        
+        this.schemaMap = new Map([
             ["MoveableRect", desiredMoveableRectValues],
             ["Rect", desiredFixedRectValues],
             ["SkeletalMuscle", desiredSkeletalMuscleValues],
@@ -39,8 +38,23 @@ class PhysicsSim{
             ["Activation", desiredActivationValues],
             ["PhysicsSim", desiredSimValues]
         ]);
+    }
+    getMuscleSerialization(index){
+        let muscle = this.#forceAddingElements.get(index);
+        let plainObject = {}
+        if(muscle != null){
+            plainObject = this.serializationManager.getDeepSerializationObject(muscle, PhysicsSim.schemaMap);
+        }else{
+            console.error("Error: muscle not found");
+        }
 
-        serializationObj["PhysicsSim"] = serializationManager.getDeepSerializationObject(this, schemaMap);
+        return JSON.stringify(plainObject);
+    }
+    get serialization(){
+        var serializationObj = {};
+        //entity and object internals
+        console.log(PhysicsSim.schemaMap);
+        serializationObj["PhysicsSim"] = this.serializationManager.getDeepSerializationObject(this, PhysicsSim.schemaMap);
         
 
         for(let [key, muscleObject] of Object.entries(this.#forceAddingElements.getPlanObject("muscle"))){
@@ -48,14 +62,14 @@ class PhysicsSim{
                 serializationObj[key] = null;
                 continue;
             }
-            serializationObj[key] = serializationManager.getDeepSerializationObject(muscleObject, schemaMap);
+            serializationObj[key] = this.serializationManager.getDeepSerializationObject(muscleObject, PhysicsSim.schemaMap);
         }
         for(let [key, object] of Object.entries(this.#objects.getPlanObject("obj"))){
             if(object === null){
                  serializationObj[key] = null;
                  continue;
             }
-            serializationObj[key] = serializationManager.getDeepSerializationObject(object, schemaMap);
+            serializationObj[key] = this.serializationManager.getDeepSerializationObject(object, PhysicsSim.schemaMap);
         }
         let serializedJSON = JSON.stringify(serializationObj);
 

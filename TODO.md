@@ -1,23 +1,15 @@
-- Create method of telling users what they can do.(Tooltips, videos, etc.)
-- Create node.js backend
-- Create home and about pages.
-- Store instance of the muscle sim.
-    - Example JSON: {"simID": "abc123",
-                     "models": {"muscle0":{
-                                    {"definition": {"paper": "paperDOI"}},
-                                    {"phenotype":{ "cellType":"cellPhenoType"}},
-                                    {"protocol": {"regime": "isometric"} }
-                                    {"state": {"VariableName": "VariableValue",...}}
-                                }},...
-                     "Objects":{
-                        "Object0":{
-                            "Type": "moveable"
-                            "Constants":{...}
-                            "Variables":{...}
-                        }
-                     
-                     }
-                    } 
+- Create node.js backend with endpoints for:
+    - /simulation/{simID}/  (REST api)
+        - POST: Passes 
+        - PATCH: changes simulation level params(pretty much just sim.t right now)
+        - PUT: 
+    - /simulation
+        - Returns a new simID that points to a black backup resource
+    - /home
+    - /about
+
+- Split sim into home, simulation, and about pages.
+
 - Create RESTful api for muscle sim storage.
     - Key parts:
         - Can't create resources outside the bounds of the sim graph.
@@ -29,8 +21,9 @@
         - PUT for replacing the sim state periodically(for backup)
         - PATCH for updating existing elements
 
-- Couple PhysicsSim with REST calls (PATCH, POST, DE
+- Couple PhysicsSim with REST calls (PATCH, POST, DELETE, GET)
 
+- Create method of telling users what they can do.(Tooltips, videos, etc.)
 
 Conceptual Notes:
 
@@ -86,3 +79,27 @@ Endpoints:
     
     - Put: (Delete with creation): 
         - (Site)/Sim/(SimID)
+
+
+
+COMPLETED:
+
+- Store instance of the muscle sim.
+    - Example JSON: {"simID": "abc123",
+                     "models": {"muscle0":{
+                                    {"definition": {"paper": "paperDOI"}},
+                                    {"phenotype":{ "cellType":"cellPhenoType"}},
+                                    {"protocol": {"regime": "isometric"} }
+                                    {"state": {"VariableName": "VariableValue",...}}
+                                }},...
+                     "Objects":{
+                        "Object0":{
+                            "Type": "moveable"
+                            "Constants":{...}
+                            "Variables":{...}
+                        }
+                     
+                     }
+                    }
+    - Variant made via autoserialization of public fields. Since the serializer needs public fields,
+    - Autoserialization is owned at the Simulation level since objects and entites are stored in private instances of custom data types. 
